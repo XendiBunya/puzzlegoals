@@ -26,6 +26,12 @@ images.post('/', session, async (c) => {
     mime = contentType.split(';')[0] || 'image/jpeg';
   }
 
+  // Security: Enforce allowed image types to prevent Stored XSS via HTML/SVG upload
+  const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+  if (!allowedMimes.includes(mime)) {
+    return c.json({ error: 'Unsupported file type. Only standard images are allowed.' }, 400);
+  }
+
   const [row] = await sql`
     INSERT INTO images (user_id, data, content_type) VALUES (${user.id}, ${data}, ${mime})
     RETURNING id
@@ -43,6 +49,7 @@ images.get('/:id', async (c) => {
   const img = rows[0];
   c.header('content-type', img.content_type);
   c.header('cache-control', 'public, max-age=31536000, immutable');
+  c.header('x-content-type-options', 'nosniff');
   return c.body(img.data);
 });
 
