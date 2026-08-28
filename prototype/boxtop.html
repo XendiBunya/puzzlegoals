@@ -1,0 +1,784 @@
+<title>Boxtop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=DM+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --paper:#E8EDEB; --mat:#D3DDD9; --mat-2:#C7D3CE; --card:#FCFDFD;
+  --ink:#16211F; --ink-2:#4E605C; --ink-3:#7D8F8A;
+  --line:#C3CFCB; --line-2:#D9E2DF;
+  --accent:#0E6E62; --accent-ink:#FFFFFF; --accent-soft:#D8E9E5;
+  --brass:#A96C22;
+  --seam:rgba(20,34,31,.30);
+  --shadow:0 1px 2px rgba(15,40,35,.20), 0 6px 18px -8px rgba(15,40,35,.30);
+  --ghost:rgba(22,33,31,.14); --ghost-num:rgba(22,33,31,.32);
+  --sp:1rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1412; --mat:#17211F; --mat-2:#1D2926; --card:#1A2523;
+    --ink:#E4ECE9; --ink-2:#9CAFAA; --ink-3:#6D817C;
+    --line:#2A3835; --line-2:#22302D;
+    --accent:#45C6B1; --accent-ink:#06201C; --accent-soft:#12332E;
+    --brass:#D9A055;
+    --seam:rgba(0,0,0,.45);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 22px -8px rgba(0,0,0,.7);
+    --ghost:rgba(230,240,237,.13); --ghost-num:rgba(230,240,237,.30);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1412; --mat:#17211F; --mat-2:#1D2926; --card:#1A2523;
+  --ink:#E4ECE9; --ink-2:#9CAFAA; --ink-3:#6D817C;
+  --line:#2A3835; --line-2:#22302D;
+  --accent:#45C6B1; --accent-ink:#06201C; --accent-soft:#12332E;
+  --brass:#D9A055;
+  --seam:rgba(0,0,0,.45);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 22px -8px rgba(0,0,0,.7);
+  --ghost:rgba(230,240,237,.13); --ghost-num:rgba(230,240,237,.30);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Karla","Helvetica Neue",Arial,sans-serif;
+  font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"Bricolage Grotesque","Karla",sans-serif; font-weight:700; margin:0; text-wrap:balance; letter-spacing:-.015em}
+button{font:inherit; color:inherit; cursor:pointer}
+input{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+
+.mono{font-family:"DM Mono",ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:"DM Mono",ui-monospace,monospace; font-size:.6875rem;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3);
+}
+
+.wrap{max-width:1220px; margin:0 auto; padding:clamp(1.25rem,3vw,2.5rem) clamp(1rem,3vw,2rem) 4rem}
+
+/* ---------- masthead ---------- */
+.masthead{display:flex; align-items:baseline; gap:.65rem; margin-bottom:1.75rem; flex-wrap:wrap}
+.mark{width:22px; height:22px; flex:none; align-self:center; color:var(--accent)}
+.masthead h1{font-size:1.4rem; font-weight:800; letter-spacing:-.03em}
+.masthead .tag{font-size:.8125rem; color:var(--ink-3)}
+.masthead .spacer{flex:1 1 auto}
+
+/* ---------- setup ---------- */
+.setup{max-width:660px; margin:0 auto}
+.setup-lede{font-size:1.0625rem; color:var(--ink-2); margin:.35rem 0 2.25rem; max-width:52ch}
+.setup h2{font-size:1.9rem; line-height:1.12; letter-spacing:-.03em}
+fieldset{border:0; padding:0; margin:0 0 2.25rem}
+legend{padding:0}
+.f-head{display:flex; align-items:baseline; gap:.6rem; margin-bottom:.6rem}
+.f-hint{font-size:.8125rem; color:var(--ink-3)}
+
+.field{
+  width:100%; padding:.7rem .85rem; background:var(--card);
+  border:1px solid var(--line); border-radius:7px; color:var(--ink);
+}
+.field::placeholder{color:var(--ink-3)}
+.field:focus{border-color:var(--accent); outline:none; box-shadow:0 0 0 3px var(--accent-soft)}
+.field-lg{font-family:"Bricolage Grotesque",sans-serif; font-size:1.25rem; font-weight:600; padding:.75rem .9rem}
+
+.steplist{list-style:none; margin:0 0 .6rem; padding:0; display:flex; flex-direction:column; gap:.3rem}
+.steplist li{
+  display:flex; align-items:center; gap:.7rem; background:var(--card);
+  border:1px solid var(--line-2); border-radius:7px; padding:.5rem .5rem .5rem .75rem;
+}
+.steplist .n{font-family:"DM Mono",monospace; font-size:.75rem; color:var(--ink-3); width:1.6em; flex:none}
+.steplist .t{flex:1; min-width:0; border:0; background:none; padding:0; font-size:.9375rem}
+.steplist .t:focus{outline:none}
+.x{
+  flex:none; width:26px; height:26px; border:0; background:none; border-radius:5px;
+  color:var(--ink-3); display:grid; place-items:center; line-height:1;
+}
+.x:hover{background:var(--line-2); color:var(--ink)}
+
+.covers{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.7rem}
+.cover{
+  position:relative; padding:0; border:1px solid var(--line); background:var(--card);
+  border-radius:9px; overflow:hidden; aspect-ratio:4/3; display:block;
+}
+.cover img{width:100%; height:100%; object-fit:cover; display:block}
+.cover[aria-pressed="true"]{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.cover .cap{
+  position:absolute; left:0; right:0; bottom:0; padding:.3rem .5rem;
+  font-family:"DM Mono",monospace; font-size:.6875rem; letter-spacing:.06em; text-transform:uppercase;
+  color:#fff; background:linear-gradient(to top,rgba(0,0,0,.62),transparent); text-align:left;
+}
+.cover.upload{display:grid; place-items:center; border-style:dashed; color:var(--ink-2); font-size:.875rem; text-align:center; padding:.5rem}
+
+.cuts{display:flex; gap:.5rem; flex-wrap:wrap}
+.cut{
+  display:flex; flex-direction:column; gap:.1rem; align-items:flex-start;
+  padding:.6rem .9rem; border:1px solid var(--line); border-radius:8px;
+  background:var(--card); min-width:104px;
+}
+.cut b{font-family:"Bricolage Grotesque",sans-serif; font-size:1.0625rem}
+.cut span{font-family:"DM Mono",monospace; font-size:.6875rem; color:var(--ink-3)}
+.cut[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft); box-shadow:0 0 0 3px var(--accent-soft)}
+.cut[aria-pressed="true"] span{color:var(--accent)}
+
+.btn{
+  border:1px solid transparent; border-radius:8px; padding:.7rem 1.3rem;
+  background:var(--accent); color:var(--accent-ink); font-weight:700; letter-spacing:.01em;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.4; cursor:not-allowed; filter:none}
+.btn-quiet{background:none; border-color:var(--line); color:var(--ink-2); font-weight:500; padding:.45rem .8rem; font-size:.875rem; border-radius:7px}
+.btn-quiet:hover{border-color:var(--ink-3); color:var(--ink); filter:none}
+
+/* ---------- board ---------- */
+.board-grid{display:grid; grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr); gap:clamp(1rem,2.5vw,2rem); align-items:start}
+@media (max-width:900px){ .board-grid{grid-template-columns:1fr} }
+
+.goalbar{display:flex; align-items:flex-end; gap:1rem; margin-bottom:1rem; flex-wrap:wrap}
+.goalbar h2{font-size:clamp(1.5rem,3.4vw,2.1rem); line-height:1.1; letter-spacing:-.03em}
+.goalbar .spacer{flex:1 1 auto}
+.tally{font-family:"DM Mono",monospace; font-size:.8125rem; color:var(--ink-2); white-space:nowrap}
+.tally b{color:var(--ink); font-weight:500; font-size:1.5rem}
+
+.mat{
+  background:var(--mat); border:1px solid var(--line); border-radius:12px;
+  padding:clamp(.5rem,1.6vw,1.1rem); position:relative;
+  box-shadow:inset 0 1px 3px rgba(15,40,35,.10);
+}
+.mat svg{display:block; width:100%; height:auto; border-radius:4px; transition:opacity .22s ease, transform .22s ease}
+.mat.recutting svg{opacity:0; transform:scale(.985)}
+.recut-note{position:absolute; inset:0 0 auto 0; display:flex; justify-content:center; transform:translateY(-50%); pointer-events:none; z-index:2}
+.recut-note span{
+  background:var(--card); color:var(--brass); border:1px solid var(--brass);
+  font-family:"DM Mono",monospace; font-size:.6875rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:.35rem .8rem; border-radius:100px; box-shadow:var(--shadow);
+  animation:pop .4s cubic-bezier(.2,.9,.3,1.2) both;
+}
+.recut-note.fading span{opacity:0; transition:opacity .5s ease}
+.ghost path{fill:none; stroke:var(--ghost); stroke-width:1.4; stroke-dasharray:5 5}
+.matbg{fill:var(--mat-2)}
+
+.pc{
+  transform-box:fill-box; transform-origin:center;
+  filter:drop-shadow(0 1px 1.5px rgba(10,30,26,.42));
+  transition:transform .58s cubic-bezier(.19,.9,.28,1.07), opacity .34s ease;
+}
+.pc.incoming{opacity:0; transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(1.14)}
+.pc.leaving{opacity:0; transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.9); pointer-events:none}
+.pc-edge{fill:none; stroke:var(--seam); stroke-width:1.6; transition:opacity .9s ease .35s}
+.badge text{font-family:"DM Mono",ui-monospace,monospace; font-weight:500; text-anchor:middle}
+.badge circle{fill:#F8F7F3; stroke:rgba(16,28,25,.55); stroke-width:1.2}
+.badge text{fill:#16211F}
+.ghostnums .badge circle{fill:none; stroke:var(--ghost-num); stroke-width:1.4; stroke-dasharray:none}
+.ghostnums .badge text{fill:var(--ghost-num)}
+.badge{transition:opacity .7s ease .35s}
+.solved .badge{opacity:0}
+.backing{opacity:0; transition:opacity .9s ease .35s}
+.solved .backing{opacity:1}
+.solved .pc-edge{opacity:0}
+.solved .pc{filter:none}
+
+.solve-note{
+  position:absolute; inset:auto 0 0 0; display:flex; justify-content:center;
+  transform:translateY(50%); pointer-events:none;
+}
+.solve-note span{
+  background:var(--brass); color:#fff; font-family:"DM Mono",monospace; font-size:.6875rem;
+  letter-spacing:.16em; text-transform:uppercase; padding:.4rem .9rem; border-radius:100px;
+  box-shadow:var(--shadow); animation:pop .5s cubic-bezier(.2,.9,.3,1.2) both;
+}
+@keyframes pop{from{transform:scale(.7); opacity:0} to{transform:scale(1); opacity:1}}
+
+/* ---------- task panel ---------- */
+.panel{background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden}
+.panel-head{display:flex; align-items:center; gap:.6rem; padding:.85rem 1rem; border-bottom:1px solid var(--line-2)}
+.panel-head .spacer{flex:1}
+.tasks{list-style:none; margin:0; padding:.35rem; display:flex; flex-direction:column; gap:1px}
+.task{display:flex; align-items:center; gap:.7rem; padding:.42rem .45rem; border-radius:7px}
+.task:hover{background:var(--line-2)}
+.task .t{flex:1; min-width:0; border:0; background:none; padding:.1rem 0; font-size:.9375rem}
+.task .t:focus{outline:none; border-bottom:1px solid var(--accent)}
+.task.done .t{color:var(--ink-3); text-decoration:line-through; text-decoration-thickness:1px}
+.task .x{opacity:0}
+.task .num{flex:none; width:1.8em; text-align:right; font-family:"DM Mono",monospace; font-size:.75rem; color:var(--ink-3)}
+.task.shared .num{opacity:.38}
+.task:hover .x, .task .x:focus-visible{opacity:1}
+
+.tick{
+  flex:none; width:26px; height:26px; border:0; background:none; padding:0;
+  display:grid; place-items:center; border-radius:5px;
+}
+.tick svg{width:22px; height:22px; overflow:visible}
+.tick .sil{fill:none; stroke:var(--ink-3); stroke-width:1.5; transition:fill .28s ease, stroke .2s ease}
+.tick:hover .sil{stroke:var(--accent)}
+.task.done .tick .sil{fill:var(--accent); stroke:var(--accent)}
+
+.addrow{display:flex; align-items:center; gap:.7rem; padding:.5rem .8rem .8rem; border-top:1px solid var(--line-2)}
+.addrow .plus{flex:none; width:26px; text-align:center; color:var(--ink-3); font-size:1.1rem; line-height:1}
+.addrow input{flex:1; border:0; background:none; padding:.3rem 0; font-size:.9375rem}
+.addrow input:focus{outline:none}
+
+.footnote{margin-top:1rem; font-size:.8125rem; color:var(--ink-3); display:flex; gap:.75rem; align-items:center; flex-wrap:wrap}
+.footnote .spacer{flex:1}
+
+@media (prefers-reduced-motion: reduce){
+  .pc,.pc-edge,.tick .sil,.mat svg{transition:none}
+  .solve-note span{animation:none}
+}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <svg class="mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 3h7c0 1.6 1 1.6 1 2.6S10 7 10 8.6h4C14 7 13 7 13 5.6S14 4.6 14 3h7v7c-1.6 0-1.6 1-2.6 1s-1.6-1-1.6.4v4c1.6 0 1.6-1 2.6-1s1.6 1 1.6 2.6v3H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    <h1>Boxtop</h1>
+    <span class="tag">a goal is a picture, cut into steps</span>
+    <span class="spacer"></span>
+    <button class="btn-quiet" id="reset" hidden>Start a new goal</button>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+(function(){
+"use strict";
+const W = 900, H = 675;
+const LADDER = [
+  {cols:4, rows:3, label:"Loose cut"},
+  {cols:5, rows:4, label:"Standard"},
+  {cols:6, rows:5, label:"Fine cut"},
+  {cols:7, rows:6, label:"Finer"},
+  {cols:8, rows:7, label:"Very fine"},
+  {cols:9, rows:8, label:"Finest"}
+];
+const CUTS = LADDER.slice(0,3);        // the starting templates offered at setup
+const rung = (cols,rows)=>{ const i=LADDER.findIndex(c=>c.cols===cols&&c.rows===rows); return i<0?0:i; };
+// the cut never has fewer tiles than there are steps: climb until it fits
+function fitCut(cols,rows,steps){
+  let j=rung(cols,rows);
+  while(j<LADDER.length-1 && LADDER[j].cols*LADDER[j].rows < steps) j++;
+  return LADDER[j];
+}
+const $ = (s,r)=> (r||document).querySelector(s);
+const el = (t,c,txt)=>{const n=document.createElement(t); if(c)n.className=c; if(txt!=null)n.textContent=txt; return n;};
+const KEY = "boxtop.v1";
+
+/* ---------------- seeded rng ---------------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};}
+function hash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+
+/* ---------------- box tops (generated, no external assets) ---------------- */
+function canvasURL(draw){
+  const c=document.createElement("canvas"); c.width=W; c.height=H;
+  draw(c.getContext("2d")); return c.toDataURL("image/jpeg",0.9);
+}
+function ridgeline(){
+  return canvasURL(ctx=>{
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,"#1B2A4A"); g.addColorStop(.45,"#54506E"); g.addColorStop(.72,"#C97B54"); g.addColorStop(1,"#EFB071");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="#F6D9A8"; ctx.beginPath(); ctx.arc(W*.68,H*.52,54,0,7); ctx.fill();
+    const bands=["#3E4668","#33395A","#272C4A","#1B1F38","#12162A"];
+    const r=mulberry32(7);
+    bands.forEach((col,i)=>{
+      const base=H*(.52+i*.105), amp=48-i*6;
+      ctx.fillStyle=col; ctx.beginPath(); ctx.moveTo(0,H);
+      for(let x=0;x<=W;x+=9){
+        const y=base+Math.sin(x/(150+i*40)+i*2.1)*amp+Math.sin(x/47+i)*amp*.28+(r()-.5)*3;
+        ctx.lineTo(x,y);
+      }
+      ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+    });
+  });
+}
+function tide(){
+  return canvasURL(ctx=>{
+    const cols=["#0B3B44","#12555C","#1E7A79","#3FA294","#7CC4A8","#C3DCC0","#E8D9AE","#D9B98A"];
+    let y=0; const r=mulberry32(31);
+    cols.forEach((c,i)=>{
+      const h=H/cols.length*(0.72+r()*0.6);
+      ctx.fillStyle=c; ctx.beginPath(); ctx.moveTo(0,y);
+      for(let x=0;x<=W;x+=8) ctx.lineTo(x, y+Math.sin(x/110+i*1.7)*9);
+      ctx.lineTo(W,y+h+60); ctx.lineTo(0,y+h+60); ctx.closePath(); ctx.fill();
+      y+=h;
+    });
+    ctx.globalAlpha=.07; ctx.fillStyle="#fff";
+    for(let i=0;i<2600;i++) ctx.fillRect(r()*W,r()*H,1.6,1.6);
+    ctx.globalAlpha=1;
+  });
+}
+function bloom(){
+  return canvasURL(ctx=>{
+    ctx.fillStyle="#EFDFC9"; ctx.fillRect(0,0,W,H);
+    const blobs=[["#D8433C",.22,.30,330],["#EE9A17",.68,.24,300],["#5E3E93",.56,.76,320],["#127A67",.16,.80,280],["#E0778F",.90,.58,240],["#1F4E8C",.44,.46,210]];
+    ctx.globalCompositeOperation="multiply";
+    blobs.forEach(([c,x,y,rad])=>{
+      for(let k=0;k<2;k++){
+        const g=ctx.createRadialGradient(W*x,H*y,0,W*x,H*y,rad);
+        g.addColorStop(0,c); g.addColorStop(.55,c+"88"); g.addColorStop(1,"rgba(239,223,201,0)");
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(W*x,H*y,rad,0,7); ctx.fill();
+      }
+    });
+    ctx.globalCompositeOperation="source-over";
+    ctx.fillStyle="rgba(35,24,18,.20)";
+    for(let x=13;x<W;x+=24) for(let y=13;y<H;y+=24) { ctx.beginPath(); ctx.arc(x,y,1.7,0,7); ctx.fill(); }
+  });
+}
+const COVERS=[{name:"Ridgeline",make:ridgeline},{name:"Tide",make:tide},{name:"Bloom",make:bloom}];
+let coverCache=null;
+function covers(){ if(!coverCache) coverCache=COVERS.map(c=>({name:c.name,url:c.make()})); return coverCache; }
+
+/* ---------------- jigsaw geometry ---------------- */
+// normalized tab: start (0,0) -> end (1,0), bulge in +y. Each entry is one cubic: c1x,c1y,c2x,c2y,px,py
+const TAB=[
+  [0.28,0.00, 0.36,0.00, 0.37,0.05],
+  [0.37,0.16, 0.28,0.19, 0.30,0.29],
+  [0.32,0.41, 0.68,0.41, 0.70,0.29],
+  [0.72,0.19, 0.63,0.16, 0.63,0.05],
+  [0.64,0.00, 0.72,0.00, 1.00,0.00]
+];
+function makeEdge(ax,ay,bx,by,sign,rand){
+  const dx=bx-ax, dy=by-ay, L=Math.hypot(dx,dy);
+  const ux=dx/L, uy=dy/L, vx=-uy, vy=ux;            // perpendicular
+  const scale=(0.56+rand()*0.16)*sign;              // tab depth, slight variance
+  const shift=(rand()-0.5)*0.07;                    // tab slides along the edge
+  const squeeze=0.88+rand()*0.26;                   // tab gets wider / narrower
+  const map=(nx,ny)=>{
+    let x=nx;
+    if(nx>0.001 && nx<0.999) x=Math.min(0.93,Math.max(0.07, 0.5+(nx-0.5)*squeeze+shift));
+    return [ax+ux*x*L+vx*ny*L*scale, ay+uy*x*L+vy*ny*L*scale];
+  };
+  const segs=TAB.map(s=>{
+    const c1=map(s[0],s[1]), c2=map(s[2],s[3]), p=map(s[4],s[5]);
+    return [c1[0],c1[1],c2[0],c2[1],p[0],p[1]];
+  });
+  return {start:[ax,ay], segs};
+}
+function reverseEdge(e){
+  const pts=[e.start].concat(e.segs.map(s=>[s[4],s[5]]));
+  const segs=[];
+  for(let i=e.segs.length-1;i>=0;i--){
+    const s=e.segs[i];
+    segs.push([s[2],s[3], s[0],s[1], pts[i][0],pts[i][1]]);
+  }
+  return {start:pts[pts.length-1], segs};
+}
+function segD(e){ return e.segs.map(s=>"C "+s.map(n=>n.toFixed(2)).join(" ")).join(" "); }
+
+function cutPuzzle(cols,rows,seed){
+  const rand=mulberry32(seed), cw=W/cols, ch=H/rows;
+  const hE=[], vE=[];
+  for(let r=1;r<rows;r++){ hE[r]=[]; for(let c=0;c<cols;c++) hE[r][c]=makeEdge(c*cw,r*ch,(c+1)*cw,r*ch, rand()<.5?1:-1, rand); }
+  for(let r=0;r<rows;r++){ vE[r]=[]; for(let c=1;c<cols;c++) vE[r][c]=makeEdge(c*cw,r*ch,c*cw,(r+1)*ch, rand()<.5?1:-1, rand); }
+  const pieces=[];
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    let d="M "+(c*cw).toFixed(2)+" "+(r*ch).toFixed(2)+" ";
+    d += (r===0) ? "L "+((c+1)*cw).toFixed(2)+" "+(r*ch).toFixed(2)+" " : segD(hE[r][c])+" ";
+    d += (c===cols-1) ? "L "+((c+1)*cw).toFixed(2)+" "+((r+1)*ch).toFixed(2)+" " : segD(vE[r][c+1])+" ";
+    d += (r===rows-1) ? "L "+(c*cw).toFixed(2)+" "+((r+1)*ch).toFixed(2)+" " : segD(reverseEdge(hE[r+1][c]))+" ";
+    d += (c===0) ? "Z" : segD(reverseEdge(vE[r][c]))+" Z";
+    pieces.push({r,c,d,cx:(c+.5)*cw, cy:(r+.5)*ch});
+  }
+  return pieces;
+}
+// reveal order: start somewhere, then grow outward from what is already down
+function placementOrder(cols,rows,seed,hint){
+  const rand=mulberry32(seed^0x9E3779B9), n=cols*rows;
+  const placed=new Set(), order=[], frontier=new Set();
+  const idx=(r,c)=>r*cols+c;
+  let first=Math.floor(rand()*n);
+  if(hint){                                   // start near where the picture was already open
+    const c=Math.min(cols-1,Math.max(0,Math.round(hint.x*cols-0.5)));
+    const r=Math.min(rows-1,Math.max(0,Math.round(hint.y*rows-0.5)));
+    first=r*cols+c;
+  }
+  const push=i=>{
+    order.push(i); placed.add(i); frontier.delete(i);
+    const r=Math.floor(i/cols), c=i%cols;
+    [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([rr,cc])=>{
+      if(rr>=0&&rr<rows&&cc>=0&&cc<cols&&!placed.has(idx(rr,cc))) frontier.add(idx(rr,cc));
+    });
+  };
+  push(first);
+  while(order.length<n){
+    const pool=frontier.size?[...frontier]:[...Array(n).keys()].filter(i=>!placed.has(i));
+    push(pool[Math.floor(rand()*pool.length)]);
+  }
+  return order;
+}
+
+/* ---------------- state ---------------- */
+let S=null, geom=null, prevRevealed=0;
+function load(){ try{ const raw=localStorage.getItem(KEY); return raw?JSON.parse(raw):null; }catch(e){ return null; } }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+const N = ()=> S.cols*S.rows;
+// Every tile belongs to exactly one step. Steps hold contiguous runs of the
+// placement order, so a step's tiles land together as one blob on the board.
+function deal(){
+  const T=S.tasks.length, n=N(); if(!T) return;
+  S.tasks.forEach((t,i)=>{
+    t.tiles=[];
+    for(let k=Math.floor(i*n/T); k<Math.floor((i+1)*n/T); k++) t.tiles.push(k);
+  });
+}
+function owners(){                       // placement position -> step number
+  const own=new Array(N()).fill(0);
+  S.tasks.forEach((t,i)=>{ (t.tiles||[]).forEach(k=>{ if(k>=0&&k<own.length) own[k]=i+1; }); });
+  return own;
+}
+function revealedTiles(){                // exactly the tiles of the steps you've finished
+  const set=new Set();
+  S.tasks.forEach(t=>{ if(t.done) (t.tiles||[]).forEach(k=>set.add(k)); });
+  return set;
+}
+const revealed = ()=> revealedTiles().size;
+
+/* ---------------- setup screen ---------------- */
+function renderSetup(){
+  const app=$("#app"); app.innerHTML=""; $("#reset").hidden=true;
+  const draft={name:"", steps:[], cover:0, custom:null, cut:1, touchedCut:false};
+
+  const wrap=el("div","setup");
+  const h=el("h2","","Pick something worth looking at when it's finished.");
+  const lede=el("p","setup-lede","Name the goal, break it into steps, and choose the picture on the box. Each step you finish sets another piece down.");
+  wrap.append(h,lede);
+
+  // goal name
+  const f1=el("fieldset");
+  f1.append(head("The goal","one sentence, present tense"));
+  const nameIn=el("input","field field-lg"); nameIn.placeholder="Run a half marathon in May"; nameIn.setAttribute("aria-label","Goal");
+  f1.append(nameIn); wrap.append(f1);
+
+  // steps
+  const f2=el("fieldset");
+  const hint=el("span","f-hint","8\u201320 works best");
+  const hd=head("The steps",""); hd.querySelector(".f-hint").replaceWith(hint);
+  f2.append(hd);
+  const list=el("ul","steplist"); f2.append(list);
+  const stepIn=el("input","field"); stepIn.placeholder="Type a step, press Enter  \u00b7  or paste a whole list";
+  stepIn.setAttribute("aria-label","Add a step");
+  f2.append(stepIn); wrap.append(f2);
+
+  function drawSteps(){
+    list.innerHTML="";
+    draft.steps.forEach((s,i)=>{
+      const li=el("li");
+      li.append(el("span","n",String(i+1).padStart(2,"0")));
+      const t=el("input","t"); t.value=s; t.setAttribute("aria-label","Step "+(i+1));
+      t.addEventListener("input",()=>{draft.steps[i]=t.value;});
+      const x=el("button","x","\u00d7"); x.type="button"; x.title="Remove step";
+      x.addEventListener("click",()=>{draft.steps.splice(i,1); drawSteps(); sync();});
+      li.append(t,x); list.append(li);
+    });
+    hint.textContent = draft.steps.length ? draft.steps.length+" step"+(draft.steps.length===1?"":"s") : "8\u201320 works best";
+  }
+  function addSteps(text){
+    const parts=text.split("\n").map(s=>s.replace(/^\s*(?:[-*\u2022]|\d+[.)])\s*/,"").trim()).filter(Boolean);
+    if(!parts.length) return;
+    draft.steps.push(...parts);
+    if(!draft.touchedCut) draft.cut = bestCut(draft.steps.length);
+    drawSteps(); sync();
+  }
+  stepIn.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); addSteps(stepIn.value); stepIn.value=""; } });
+  stepIn.addEventListener("paste",e=>{
+    const t=(e.clipboardData||window.clipboardData).getData("text");
+    if(t && t.indexOf("\n")>-1){ e.preventDefault(); addSteps(t); stepIn.value=""; }
+  });
+
+  // cover
+  const f3=el("fieldset");
+  f3.append(head("The box top","the picture you're uncovering"));
+  const grid=el("div","covers");
+  covers().forEach((c,i)=>{
+    const b=el("button","cover"); b.type="button"; b.setAttribute("aria-pressed", i===0?"true":"false");
+    const im=el("img"); im.src=c.url; im.alt=c.name; b.append(im, el("span","cap",c.name));
+    b.addEventListener("click",()=>{ draft.cover=i; draft.custom=null; paintCovers(); });
+    grid.append(b);
+  });
+  const up=el("label","cover upload");
+  up.innerHTML='<span>Use my own photo<br><small style="color:var(--ink-3)">the thing you actually want</small></span>';
+  const file=el("input"); file.type="file"; file.accept="image/*"; file.style.display="none";
+  file.addEventListener("change",()=>{
+    const f=file.files&&file.files[0]; if(!f) return;
+    const fr=new FileReader();
+    fr.onload=()=>{ draft.custom=fr.result; draft.cover=-1; paintCovers(); };
+    fr.readAsDataURL(f);
+  });
+  up.append(file); grid.append(up);
+  function paintCovers(){
+    [...grid.children].forEach((b,i)=>{ if(b.classList.contains("upload")) return; b.setAttribute("aria-pressed", String(draft.cover===i)); });
+    up.style.borderColor = draft.custom ? "var(--accent)" : "";
+    up.style.boxShadow = draft.custom ? "0 0 0 3px var(--accent-soft)" : "";
+    if(draft.custom){
+      let pv=up.querySelector("img");
+      if(!pv){ pv=el("img"); up.prepend(pv); up.style.position="relative"; }
+      pv.src=draft.custom; pv.alt="Your photo";
+      pv.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:cover";
+    }
+  }
+  f3.append(grid); wrap.append(f3);
+
+  // cut
+  const f4=el("fieldset");
+  f4.append(head("The starting cut","it gets finer on its own if you add steps"));
+  const cuts=el("div","cuts");
+  CUTS.forEach((c,i)=>{
+    const b=el("button","cut"); b.type="button";
+    b.append(el("b",null,(c.cols*c.rows)+" pieces"), el("span",null,c.cols+" \u00d7 "+c.rows+"  \u00b7  "+c.label));
+    b.addEventListener("click",()=>{ draft.cut=i; draft.touchedCut=true; sync(); });
+    cuts.append(b);
+  });
+  f4.append(cuts);
+  const note=el("p","f-hint"); note.style.marginTop=".6rem";
+  f4.append(note); wrap.append(f4);
+
+  const go=el("button","btn","Cut the puzzle"); go.type="button";
+  wrap.append(go);
+  app.append(wrap);
+
+  function head(title,hintTxt){
+    const d=el("div","f-head"); d.append(el("span","eyebrow",title), el("span","f-hint",hintTxt||"")); return d;
+  }
+  function bestCut(n){
+    const i=CUTS.findIndex(c=>c.cols*c.rows>=n);
+    return i<0 ? CUTS.length-1 : i;
+  }
+  function sync(){
+    [...cuts.children].forEach((b,i)=>b.setAttribute("aria-pressed",String(draft.cut===i)));
+    const n=draft.steps.length, pick=CUTS[draft.cut], p=pick.cols*pick.rows;
+    const fit=fitCut(pick.cols,pick.rows,n), f=fit.cols*fit.rows;
+    note.textContent = !n ? "Add some steps and we'll suggest a cut."
+      : n>f ? n+" steps is past the finest cut ("+f+" pieces), so some steps will share a tile."
+      : f>p ? n+" steps won't fit a "+p+"-piece cut, so it starts at "+f+" ("+fit.cols+" \u00d7 "+fit.rows+")."
+      : n===p ? "One step, one piece. Clean."
+      : "Each step lays down about "+(p/n).toFixed(1)+" pieces. Add more steps and the cut gets finer.";
+    go.disabled = !(nameIn.value.trim() && draft.steps.length>=2);
+  }
+  nameIn.addEventListener("input",sync);
+  go.addEventListener("click",()=>{
+    const c=fitCut(CUTS[draft.cut].cols, CUTS[draft.cut].rows, draft.steps.length);
+    S={
+      goal:nameIn.value.trim(), img: draft.custom || covers()[draft.cover<0?0:draft.cover].url,
+      cols:c.cols, rows:c.rows, startHint:null,
+      seed:hash(nameIn.value+"|"+draft.steps.length+"|"+Date.now()),
+      tasks:draft.steps.map((t,i)=>({id:"t"+i+"_"+Math.floor(Math.random()*1e6), text:t, done:false}))
+    };
+    deal(); save(); renderBoard();
+  });
+
+  drawSteps(); paintCovers(); sync();
+}
+
+/* ---------------- board screen ---------------- */
+function renderBoard(){
+  const app=$("#app"); app.innerHTML=""; $("#reset").hidden=false;
+  function buildGeom(){
+    geom={pieces:cutPuzzle(S.cols,S.rows,S.seed), order:placementOrder(S.cols,S.rows,S.seed,S.startHint)};
+    geom.pos=[]; geom.order.forEach((pi,k)=>{ geom.pos[pi]=k; });
+  }
+  buildGeom();
+
+  const bar=el("div","goalbar");
+  const gh=el("h2",null,S.goal); bar.append(gh, el("span","spacer"));
+  const tally=el("div","tally"); bar.append(tally);
+  app.append(bar);
+
+  const grid=el("div","board-grid");
+  const matWrap=el("div","mat");
+  matWrap.innerHTML=svgMarkup();
+  const panel=el("div","panel");
+  grid.append(matWrap,panel); app.append(grid);
+
+  const foot=el("div","footnote");
+  foot.append(el("span",null,"Everything lives in this browser. Nothing is sent anywhere."), el("span","spacer"));
+  app.append(foot);
+
+  function svgMarkup(){
+    const defs=geom.pieces.map((p,i)=>'<clipPath id="clip'+i+'"><path d="'+p.d+'"/></clipPath>').join("");
+    const ghosts=geom.pieces.map(p=>'<path d="'+p.d+'"/>').join("");
+    const cw=W/S.cols, ch=H/S.rows;
+    const r=Math.max(11,Math.min(16,Math.min(cw,ch)*0.095)), off=r*1.75, fs=(r*1.16).toFixed(1);
+    const badge=(p,i)=>{
+      const bx=(p.c*cw+off).toFixed(1), by=(p.r*ch+off).toFixed(1);
+      return '<g class="badge" data-i="'+i+'"><circle cx="'+bx+'" cy="'+by+'" r="'+r.toFixed(1)+'"/>'+
+             '<text x="'+bx+'" y="'+by+'" dy=".36em" font-size="'+fs+'">'+'</text></g>';
+    };
+    const gnums=geom.pieces.map((p,i)=>badge(p,i)).join("");
+    const pcs=geom.pieces.map((p,i)=>
+      '<g class="pc" data-i="'+i+'" style="display:none"><g clip-path="url(#clip'+i+')">'+
+      '<image href="'+S.img+'" x="0" y="0" width="'+W+'" height="'+H+'" preserveAspectRatio="xMidYMid slice"/>'+
+      '<path class="pc-edge" d="'+p.d+'"/></g>'+badge(p,i)+'</g>').join("");
+    return '<svg viewBox="-24 -24 '+(W+48)+' '+(H+48)+'" role="img" aria-label="Puzzle of your goal">'+
+      '<defs>'+defs+'</defs>'+
+      '<rect class="matbg" x="0" y="0" width="'+W+'" height="'+H+'" rx="3"/>'+
+      '<image class="backing" href="'+S.img+'" x="0" y="0" width="'+W+'" height="'+H+'" preserveAspectRatio="xMidYMid slice"/>'+
+      '<g class="ghost">'+ghosts+'</g><g class="ghostnums">'+gnums+'</g>'+pcs+'</svg>';
+  }
+
+  renderTasks(panel);
+  paint(true);
+  $("#reset").onclick=()=>{
+    if(!confirm("Clear this goal and start a new one? The current puzzle is discarded.")) return;
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    S=null; renderSetup();
+  };
+
+  function renderTasks(panel){
+    panel.innerHTML="";
+    const hd=el("div","panel-head");
+    hd.append(el("span","eyebrow","Steps"), el("span","spacer"));
+    const cnt=el("span","tally"); hd.append(cnt); panel.append(hd);
+
+    const ul=el("ul","tasks");
+    S.tasks.forEach((t,i)=>{
+      const li=el("li","task"+(t.done?" done":""));
+      const tick=el("button","tick"); tick.type="button";
+      tick.setAttribute("aria-pressed",String(t.done));
+      tick.setAttribute("aria-label",(t.done?"Undo":"Complete")+": "+t.text);
+      tick.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><path class="sil" d="M2 2h5.2c0 1.3-.9 1.1-.9 2.2S7.5 5.8 8.6 5.8 10.9 5.3 10.9 4.2 10 4.4 10 2H18v5.6c-1.3 0-1.1-.9-2.2-.9s-1.6 1.2-1.6 2.3.5 2.3 1.6 2.3 1-.9 2.2-.9V18h-5.6c0-1.3.9-1.1.9-2.2s-1.2-1.6-2.3-1.6-2.3.5-2.3 1.6.9 1 .9 2.2H2z"/></svg>';
+      tick.addEventListener("click",()=>toggle(i));
+      const inp=el("input","t"); inp.value=t.text; inp.setAttribute("aria-label","Step "+(i+1));
+      inp.addEventListener("input",()=>{ t.text=inp.value; save(); });
+      const x=el("button","x","\u00d7"); x.type="button"; x.title="Remove step";
+      x.setAttribute("aria-label","Remove step: "+t.text);
+      x.addEventListener("click",()=>{
+        const gone=S.tasks.splice(i,1)[0];
+        const nb=S.tasks[i-1]||S.tasks[i];
+        if(nb) nb.tiles=nb.tiles.concat(gone.tiles||[]).sort((a,b)=>a-b);
+        save(); renderTasks(panel); paint();
+      });
+      li.append(tick,inp,x); ul.append(li);
+      li.dataset.n=String(i+1);
+    });
+    panel.append(ul);
+
+    const add=el("div","addrow");
+    add.append(el("span","plus","+"));
+    const ai=el("input"); ai.placeholder="Add a step"; ai.setAttribute("aria-label","Add a step");
+    ai.addEventListener("keydown",e=>{
+      if(e.key!=="Enter") return;
+      const v=ai.value.trim(); if(!v) return;
+      ai.value=""; addTask(v);
+      const box=panel.querySelector(".addrow input"); if(box) box.focus();
+    });
+    add.append(ai); panel.append(add);
+
+    const pad=S.tasks.length>=10?2:1;
+    [...ul.children].forEach((li,i)=>{
+      const num=el("span","num mono",String(i+1).padStart(pad,"0"));
+      const own=(S.tasks[i].tiles||[]).length;
+      if(!own){ li.classList.add("shared"); num.title="No tile of its own \u2014 the cut is already at its finest"; }
+      else if(own>1) num.title=own+" tiles";
+      li.prepend(num);
+    });
+    const done=S.tasks.filter(t=>t.done).length;
+    cnt.textContent=done+" of "+S.tasks.length+" done";
+  }
+
+  // where the open part of the picture currently sits, so a new cut reopens the same area
+  function revealHint(){
+    const tiles=revealedTiles(); if(!tiles.size) return S.startHint||null;
+    let sx=0, sy=0;
+    tiles.forEach(k=>{ const p=geom.pieces[geom.order[k]]; sx+=p.cx; sy+=p.cy; });
+    return {x:(sx/tiles.size)/W, y:(sy/tiles.size)/H};
+  }
+
+  // steps outgrew the cut: climb to the next template, keeping the same share of the picture open
+  function recut(fit){
+    S.startHint=revealHint();
+    S.cols=fit.cols; S.rows=fit.rows;
+    save();
+    const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const swap=()=>{
+      buildGeom(); deal(); save();
+      matWrap.innerHTML=svgMarkup();
+      paint(true);
+      matWrap.classList.remove("recutting");
+      notice("Re-cut to "+N()+" pieces");
+    };
+    if(reduce){ swap(); return; }
+    matWrap.classList.add("recutting");
+    setTimeout(swap,230);
+  }
+
+  let noticeTimer=null;
+  function notice(text){
+    const old=matWrap.querySelector(".recut-note"); if(old) old.remove();
+    clearTimeout(noticeTimer);
+    const n=el("div","recut-note"); n.innerHTML="<span>"+text+"</span>";
+    matWrap.append(n);
+    noticeTimer=setTimeout(()=>{ n.classList.add("fading"); setTimeout(()=>n.remove(),600); },3200);
+  }
+
+  function addTask(text){
+    const t={id:"t"+Date.now()+"_"+S.tasks.length, text:text, done:false, tiles:[]};
+    S.tasks.push(t);
+    const fit=fitCut(S.cols,S.rows,S.tasks.length);
+    if(fit.cols!==S.cols||fit.rows!==S.rows){ renderTasks(panel); recut(fit); return; }
+    // borrow one tile from a step that has spares, preferring an unfinished
+    // step so nothing already on the board gets taken back
+    const spare=x=>x!==t && x.tiles.length>1;
+    const fattest=a=>a.length?a.reduce((m,x)=>x.tiles.length>m.tiles.length?x:m):null;
+    const donor=fattest(S.tasks.filter(x=>spare(x)&&!x.done)) || fattest(S.tasks.filter(spare));
+    if(donor) t.tiles=[donor.tiles.pop()];
+    save(); renderTasks(panel); paint();
+  }
+
+  function toggle(i){
+    S.tasks[i].done=!S.tasks[i].done;
+    save(); renderTasks(panel); paint();
+  }
+
+  function paint(instant){
+    const total=N(), tiles=revealedTiles(), n=tiles.size;
+    const set=new Set([...tiles].map(k=>geom.order[k]));
+    const own=owners();
+    matWrap.querySelectorAll(".badge").forEach(b=>{
+      const i=+b.dataset.i, t=b.querySelector("text");
+      if(t) t.textContent = own[geom.pos[i]] ? String(own[geom.pos[i]]) : "";
+    });
+    matWrap.querySelectorAll(".ghostnums .badge").forEach(b=>{
+      b.style.display = set.has(+b.dataset.i) ? "none" : "";
+    });
+    const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const rand=mulberry32(S.seed^0x51ED);
+    matWrap.querySelectorAll(".pc").forEach(g=>{
+      const i=+g.dataset.i, want=set.has(i), shown=g.style.display!=="none";
+      if(want===shown) return;
+      const p=geom.pieces[i];
+      const ang=rand()*Math.PI*2, dist=520+rand()*260;
+      g.style.setProperty("--dx",(Math.cos(ang)*dist).toFixed(0)+"px");
+      g.style.setProperty("--dy",(Math.sin(ang)*dist*.7).toFixed(0)+"px");
+      g.style.setProperty("--rot",((rand()-.5)*150).toFixed(0)+"deg");
+      if(want){
+        g.style.display="";
+        if(instant||reduce){ g.classList.remove("incoming","leaving"); return; }
+        g.classList.remove("leaving"); g.classList.add("incoming");
+        requestAnimationFrame(()=>requestAnimationFrame(()=>g.classList.remove("incoming")));
+      } else {
+        if(instant||reduce){ g.style.display="none"; g.classList.remove("incoming","leaving"); return; }
+        g.classList.add("leaving");
+        setTimeout(()=>{ if(g.classList.contains("leaving")){ g.style.display="none"; g.classList.remove("leaving"); } },420);
+      }
+    });
+    const solved=n===total;
+    matWrap.classList.toggle("solved",solved);
+    let note=matWrap.querySelector(".solve-note");
+    if(solved && !note){
+      note=el("div","solve-note"); note.innerHTML="<span>Solved \u00b7 "+total+" pieces</span>";
+      matWrap.append(note);
+    } else if(!solved && note){ note.remove(); }
+    tally.innerHTML='<b>'+n+'</b> / '+total+' pieces placed';
+    prevRevealed=n;
+  }
+}
+
+/* ---------------- boot ---------------- */
+const saved=load();
+if(saved && saved.tasks && saved.tasks.length && saved.img){
+  S=saved;
+  if(S.tasks.some(t=>!Array.isArray(t.tiles))) deal();   // state from before tiles were owned
+  renderBoard();
+}
+else renderSetup();
+})();
+</script>
