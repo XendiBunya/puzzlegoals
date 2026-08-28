@@ -26,6 +26,11 @@ images.post('/', session, async (c) => {
     mime = contentType.split(';')[0] || 'image/jpeg';
   }
 
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowedMimeTypes.includes(mime)) {
+    return c.json({ error: 'Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.' }, 400);
+  }
+
   const [row] = await sql`
     INSERT INTO images (user_id, data, content_type) VALUES (${user.id}, ${data}, ${mime})
     RETURNING id
