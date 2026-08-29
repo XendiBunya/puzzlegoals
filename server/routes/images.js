@@ -26,6 +26,12 @@ images.post('/', session, async (c) => {
     mime = contentType.split(';')[0] || 'image/jpeg';
   }
 
+  // Security: Prevent Stored XSS by restricting allowed MIME types
+  const allowedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
+  if (!allowedMimeTypes.has(mime)) {
+    return c.json({ error: 'Invalid file type' }, 415);
+  }
+
   const [row] = await sql`
     INSERT INTO images (user_id, data, content_type) VALUES (${user.id}, ${data}, ${mime})
     RETURNING id
@@ -43,6 +49,9 @@ images.get('/:id', async (c) => {
   const img = rows[0];
   c.header('content-type', img.content_type);
   c.header('cache-control', 'public, max-age=31536000, immutable');
+  // Security: Prevent content sniffing and inline script execution
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('Content-Security-Policy', "default-src 'none'");
   return c.body(img.data);
 });
 
