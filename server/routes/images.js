@@ -4,6 +4,8 @@ import { session } from '../middleware/session.js';
 
 const images = new Hono();
 
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
 // Upload requires auth
 images.post('/', session, async (c) => {
   const user = c.get('user');
@@ -24,6 +26,10 @@ images.post('/', session, async (c) => {
     if (body.byteLength > 5 * 1024 * 1024) return c.json({ error: 'File too large (5 MB max)' }, 413);
     data = Buffer.from(body);
     mime = contentType.split(';')[0] || 'image/jpeg';
+  }
+
+  if (!ALLOWED_MIME_TYPES.includes(mime)) {
+    return c.json({ error: 'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.' }, 400);
   }
 
   const [row] = await sql`
