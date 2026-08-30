@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 const PieceTick = () => (
   <svg viewBox="0 0 20 20" aria-hidden="true">
