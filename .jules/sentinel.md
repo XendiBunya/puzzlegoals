@@ -1,0 +1,4 @@
+## 2024-05-24 - [CRITICAL] Prevent Stored XSS in Image Uploads
+**Vulnerability:** The image upload endpoint (`server/routes/images.js`) allowed any file type to be uploaded and served back without any MIME type validation or Content-Security-Policy headers. An attacker could upload a malicious SVG or HTML file (Stored XSS) and execute arbitrary JavaScript in the context of the domain when a user viewed the file.
+**Learning:** File uploads that rely solely on client-provided `Content-Type` and serve the file back dynamically are extremely susceptible to XSS if not explicitly restricted.
+**Prevention:** Always validate MIME types against a strict whitelist (e.g., JPEG, PNG, WebP) on upload. Additionally, when serving user-uploaded files, enforce defense-in-depth by setting `X-Content-Type-Options: nosniff` and a restrictive CSP (like `default-src 'none'`).

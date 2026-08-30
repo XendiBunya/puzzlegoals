@@ -26,6 +26,12 @@ images.post('/', session, async (c) => {
     mime = contentType.split(';')[0] || 'image/jpeg';
   }
 
+  // Security: Validate MIME type to prevent Stored XSS via malicious uploads (e.g. SVG or HTML)
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowedMimeTypes.includes(mime.toLowerCase())) {
+    return c.json({ error: 'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.' }, 400);
+  }
+
   const [row] = await sql`
     INSERT INTO images (user_id, data, content_type) VALUES (${user.id}, ${data}, ${mime})
     RETURNING id
@@ -43,6 +49,11 @@ images.get('/:id', async (c) => {
   const img = rows[0];
   c.header('content-type', img.content_type);
   c.header('cache-control', 'public, max-age=31536000, immutable');
+
+  // Security: Prevent MIME sniffing and restrict active content to prevent XSS
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('Content-Security-Policy', "default-src 'none'");
+
   return c.body(img.data);
 });
 
