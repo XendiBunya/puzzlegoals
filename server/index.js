@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
+import { secureHeaders } from 'hono/secure-headers';
 import { existsSync, readFileSync } from 'fs';
 import 'dotenv/config';
 
@@ -11,6 +12,13 @@ import images from './routes/images.js';
 const app = new Hono();
 
 app.use('*', logger());
+app.use('*', secureHeaders());
+
+// Secure error handler to prevent stack trace leaks
+app.onError((err, c) => {
+  console.error('[server error]', err);
+  return c.json({ error: 'Internal Server Error' }, 500);
+});
 
 // API routes
 app.route('/api/goals', goals);
