@@ -16,34 +16,33 @@ import images from './routes/images.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const distPath = join(__dirname, '..', 'dist');
 
-const app = new Hono();
-
-app.use('*', secureHeaders());
-app.use('*', logger());
-app.use('/api/*', bodyLimit({
-  maxSize: 10 * 1024 * 1024, // 10MB limit
-  onError: (c) => c.json({ error: 'Payload Too Large' }, 413)
-}));
-
-// API routes — registered first so they always take priority
-app.route('/api/goals', goals);
-app.route('/api/images', images);
+// API app — handles all /api/* routes
+const api = new Hono();
+api.route('/goals', goals);
+api.route('/images', images);
 const startedAt = new Date().toISOString();
 let gitCommit = 'unknown';
 try { gitCommit = execSync('git rev-parse --short HEAD').toString().trim(); } catch {}
-app.get('/api/health', (c) => c.json({ ok: true, commit: gitCommit, started: startedAt }));
+api.get('/health', (c) => c.json({ ok: true, commit: gitCommit, started: startedAt }));
+
+// Main app
+const app = new Hono();
+app.use('*', secureHeaders());
+app.use('*', logger());
+app.use('/api/*', bodyLimit({
+  maxSize: 10 * 1024 * 1024,
+  onError: (c) => c.json({ error: 'Payload Too Large' }, 413),
+}));
+
+// Mount API — this MUST match before static files
+app.route('/api', api);
 
 // Serve static files from dist/ in production
 if (existsSync(distPath)) {
-  // Static assets (JS, CSS, images)
   app.use('/assets/*', serveStatic({ root: distPath, rewriteRequestPath: (p) => p }));
 
-  // Fallback: serve index.html for all non-API routes (client-side routing)
   const indexHtml = readFileSync(join(distPath, 'index.html'), 'utf8');
-  app.get('*', (c) => {
-    if (c.req.path.startsWith('/api')) return c.json({ error: 'Not found' }, 404);
-    return c.html(indexHtml);
-  });
+  app.get('*', (c) => c.html(indexHtml));
 }
 
 const port = process.env.PORT || 3001;
