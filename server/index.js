@@ -2,6 +2,8 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
+import { secureHeaders } from 'hono/secure-headers';
+import { bodyLimit } from 'hono/body-limit';
 import { existsSync, readFileSync } from 'fs';
 import 'dotenv/config';
 
@@ -10,7 +12,12 @@ import images from './routes/images.js';
 
 const app = new Hono();
 
+app.use('*', secureHeaders());
 app.use('*', logger());
+app.use('/api/*', bodyLimit({
+  maxSize: 10 * 1024 * 1024, // 10MB limit
+  onError: (c) => c.json({ error: 'Payload Too Large' }, 413)
+}));
 
 // API routes
 app.route('/api/goals', goals);
