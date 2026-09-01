@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
 
 function gitHash() {
+  // Railway sets RAILWAY_GIT_COMMIT_SHA; fall back to local git
+  if (process.env.RAILWAY_GIT_COMMIT_SHA) return process.env.RAILWAY_GIT_COMMIT_SHA.slice(0, 7);
   try { return execSync('git rev-parse --short HEAD').toString().trim(); }
   catch { return 'unknown'; }
 }
