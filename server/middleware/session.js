@@ -16,7 +16,6 @@ export async function session(c, next) {
 
   try {
     const { payload } = await jwtVerify(token, jwks);
-    console.log('[auth] JWT sub:', payload.sub, 'email:', payload.email);
     c.set('user', { id: payload.sub, email: payload.email });
     await next();
   } catch (err) {
