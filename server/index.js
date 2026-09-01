@@ -5,6 +5,7 @@ import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { bodyLimit } from 'hono/body-limit';
 import { existsSync, readFileSync } from 'fs';
+import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import 'dotenv/config';
@@ -27,7 +28,10 @@ app.use('/api/*', bodyLimit({
 // API routes — registered first so they always take priority
 app.route('/api/goals', goals);
 app.route('/api/images', images);
-app.get('/api/health', (c) => c.json({ ok: true }));
+const startedAt = new Date().toISOString();
+let gitCommit = 'unknown';
+try { gitCommit = execSync('git rev-parse --short HEAD').toString().trim(); } catch {}
+app.get('/api/health', (c) => c.json({ ok: true, commit: gitCommit, started: startedAt }));
 
 // Serve static files from dist/ in production
 if (existsSync(distPath)) {

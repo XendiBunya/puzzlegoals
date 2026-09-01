@@ -271,3 +271,10 @@ legend{padding:0}
 
 /* ---------- account ---------- */
 .account-form{display:flex; flex-direction:column; gap:.6rem}
+
+/* ---------- build info ---------- */
+.build-info{
+  margin-top:2rem; padding-top:1rem; border-top:1px solid var(--line-2);
+  font-family:"DM Mono",monospace; font-size:.6875rem; color:var(--ink-3);
+  text-align:right;
+}
