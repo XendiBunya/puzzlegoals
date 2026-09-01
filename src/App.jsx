@@ -112,6 +112,8 @@ export default function App() {
       </header>
       <main>{screen}</main>
       <footer className="build-info">
+        <a href="/faq" target="_blank" rel="noopener">FAQ</a>
+        <span className="spacer" />
         {__BUILD_INFO__.commit} &middot; {new Date(__BUILD_INFO__.built).toLocaleString()}
       </footer>
     </div>

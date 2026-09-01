@@ -276,5 +276,7 @@ legend{padding:0}
 .build-info{
   margin-top:2rem; padding-top:1rem; border-top:1px solid var(--line-2);
   font-family:"DM Mono",monospace; font-size:.6875rem; color:var(--ink-3);
-  text-align:right;
+  display:flex; align-items:center; gap:.5rem;
 }
+.build-info a{color:var(--ink-3); text-decoration:none}
+.build-info a:hover{color:var(--accent)}

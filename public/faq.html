@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PuzzleGoals — FAQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" />
+  <style>
+    :root {
+      --paper:#E8EDEB; --ink:#16211F; --ink-2:#4E605C; --ink-3:#7D8F8A;
+      --accent:#0E6E62; --line:#C3CFCB; --card:#FCFDFD;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper:#0D1412; --ink:#E4ECE9; --ink-2:#9CAFAA; --ink-3:#6D817C;
+        --accent:#45C6B1; --line:#2A3835; --card:#1A2523;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--paper); color: var(--ink);
+      font-family: "Karla", "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+    h1 { font-family: "Bricolage Grotesque", sans-serif; font-size: 1.8rem; font-weight: 800; letter-spacing: -.03em; margin: 0 0 .25rem; }
+    h2 { font-family: "Bricolage Grotesque", sans-serif; font-size: 1.15rem; font-weight: 700; letter-spacing: -.02em; margin: 2rem 0 .5rem; color: var(--ink); }
+    p, li { color: var(--ink-2); max-width: 65ch; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .subtitle { color: var(--ink-3); font-size: .9375rem; margin: 0 0 2.5rem; }
+    .section { border-top: 1px solid var(--line); padding-top: 1.5rem; margin-top: 1.5rem; }
+    ul { padding-left: 1.25rem; }
+    li { margin-bottom: .4rem; }
+    code { font-family: "DM Mono", monospace; font-size: .875rem; background: var(--card); border: 1px solid var(--line); padding: .1rem .35rem; border-radius: 4px; }
+    .back { display: inline-block; margin-bottom: 1.5rem; font-size: .875rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">&larr; Back to PuzzleGoals</a>
+    <h1>Frequently Asked Questions</h1>
+    <p class="subtitle">How PuzzleGoals works, what it can and can't do, and what's coming next.</p>
+
+    <div class="section">
+      <h2>What is PuzzleGoals?</h2>
+      <p>PuzzleGoals turns your goals into jigsaw puzzles. You name a goal, break it into steps, and pick an image. The app cuts the image into puzzle pieces — one group per step. Each time you complete a step, its pieces snap into place. Finish everything and the full picture is revealed.</p>
+    </div>
+
+    <div class="section">
+      <h2>How does the puzzle work?</h2>
+      <p>The image is cut into interlocking jigsaw pieces using bezier curves. Each step owns specific tiles. The cut starts loose (12 pieces) and automatically gets finer as you add steps, climbing through 20 → 30 → 42 → 56 → 72 pieces. Every visual decision is driven by a seeded random number generator, so the same goal always produces the same puzzle.</p>
+    </div>
+
+    <div class="section">
+      <h2>What happens when I add or remove steps?</h2>
+      <ul>
+        <li><strong>Adding a step:</strong> The new step borrows a tile from whichever step has the most, preferring unfinished steps so nothing already on the board gets taken back. If the cut can't hold all steps, it automatically climbs to a finer cut.</li>
+        <li><strong>Removing a step:</strong> Its tiles are given to a neighbouring step. The cut never shrinks back down.</li>
+        <li><strong>Reordering:</strong> Drag the ≡ handle to reorder steps. Tiles stay with their step.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Where is my data stored?</h2>
+      <p>Your account and goals are stored in a Neon Postgres database in the cloud. Uploaded images are stored in the same database. Your data is tied to your account and accessible from any device.</p>
+    </div>
+
+    <div class="section">
+      <h2>Known Limitations</h2>
+      <ul>
+        <li><strong>Image size:</strong> Uploaded photos are capped at 5 MB. They are stored as binary data in the database, not a dedicated image service, so very large images are not supported.</li>
+        <li><strong>Concurrent editing:</strong> If you have the same goal open in two browser tabs and edit both, the second save may overwrite the first. There is no real-time sync or conflict resolution yet.</li>
+        <li><strong>No undo:</strong> There is no undo history beyond toggling a step back to incomplete.</li>
+        <li><strong>No goal sharing:</strong> Goals are private to your account. There is no way to share a puzzle or collaborate on a goal with others.</li>
+        <li><strong>No mobile app:</strong> PuzzleGoals is a web app. It works in mobile browsers but there is no native iOS or Android app.</li>
+        <li><strong>Puzzle cap:</strong> The finest cut is 72 pieces (9×8). If you have more than 72 steps, some steps will share a tile and won't reveal new pieces when completed.</li>
+        <li><strong>Built-in images only:</strong> There are three generated cover images (Ridgeline, Tide, Bloom). You can upload your own photo, but there is no image library or search.</li>
+        <li><strong>No email change:</strong> Email address changes are not currently supported through the app. Your email is managed by Neon Auth.</li>
+        <li><strong>Session expiry:</strong> Sessions expire after 30 days. You will need to sign in again after that.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>What's on the roadmap?</h2>
+      <ul>
+        <li>Sign in with Google</li>
+        <li>Goal sharing and public puzzle links</li>
+        <li>Step notes and descriptions</li>
+        <li>Step due dates and reminders</li>
+        <li>Mobile-optimized experience</li>
+        <li>More built-in cover images</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>How do I reset my password?</h2>
+      <p>On the sign-in screen, click "Forgot password?" and enter your email. You'll receive a reset link that expires in 15 minutes.</p>
+    </div>
+
+    <div class="section">
+      <h2>Can I delete my account?</h2>
+      <p>Not yet through the app. Contact the developer if you need your account deleted.</p>
+    </div>
+
+    <div class="section">
+      <h2>Is PuzzleGoals open source?</h2>
+      <p>The source code is on <a href="https://github.com/XendiBunya/puzzlegoals">GitHub</a>.</p>
+    </div>
+  </div>
+</body>
+</html>

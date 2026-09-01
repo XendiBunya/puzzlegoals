@@ -41,6 +41,13 @@ app.route('/api', api);
 if (existsSync(distPath)) {
   app.use('/assets/*', serveStatic({ root: distPath, rewriteRequestPath: (p) => p }));
 
+  // Serve static HTML pages (e.g. faq.html)
+  app.get('/faq', (c) => {
+    const faqPath = join(distPath, 'faq.html');
+    if (existsSync(faqPath)) return c.html(readFileSync(faqPath, 'utf8'));
+    return c.notFound();
+  });
+
   const indexHtml = readFileSync(join(distPath, 'index.html'), 'utf8');
   app.get('*', (c) => c.html(indexHtml));
 }
