@@ -5,10 +5,15 @@ import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { bodyLimit } from 'hono/body-limit';
 import { existsSync, readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import 'dotenv/config';
 
 import goals from './routes/goals.js';
 import images from './routes/images.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const distPath = join(__dirname, '..', 'dist');
 
 const app = new Hono();
 
@@ -19,20 +24,18 @@ app.use('/api/*', bodyLimit({
   onError: (c) => c.json({ error: 'Payload Too Large' }, 413)
 }));
 
-// API routes
+// API routes — registered first so they always take priority
 app.route('/api/goals', goals);
 app.route('/api/images', images);
 app.get('/api/health', (c) => c.json({ ok: true }));
 
-// Serve static files from dist/ in production (exclude /api paths)
-if (existsSync('dist')) {
-  app.use('*', async (c, next) => {
-    if (c.req.path.startsWith('/api')) return next();
-    return serveStatic({ root: './dist' })(c, next);
-  });
+// Serve static files from dist/ in production
+if (existsSync(distPath)) {
+  // Static assets (JS, CSS, images)
+  app.use('/assets/*', serveStatic({ root: distPath, rewriteRequestPath: (p) => p }));
 
-  // Fallback to index.html for client-side routing (not API)
-  const indexHtml = readFileSync('dist/index.html', 'utf8');
+  // Fallback: serve index.html for all non-API routes (client-side routing)
+  const indexHtml = readFileSync(join(distPath, 'index.html'), 'utf8');
   app.get('*', (c) => {
     if (c.req.path.startsWith('/api')) return c.json({ error: 'Not found' }, 404);
     return c.html(indexHtml);
