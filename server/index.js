@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { bodyLimit } from 'hono/body-limit';
@@ -27,6 +28,16 @@ api.get('/health', (c) => c.json({ ok: true, commit: gitCommit, started: started
 
 // Main app
 const app = new Hono();
+
+// Global error handler - fail securely and don't leak stack traces
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+  console.error(err);
+  return c.json({ error: 'Internal Server Error' }, 500);
+});
+
 app.use('*', secureHeaders());
 app.use('*', logger());
 app.use('/api/*', bodyLimit({
