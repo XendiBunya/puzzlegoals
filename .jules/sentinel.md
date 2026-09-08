@@ -8,3 +8,8 @@
 **Vulnerability:** Memory exhaustion DoS risk on file uploads (`/api/images`). The server was buffering incoming multi-part requests completely in memory before checking the size limits.
 **Learning:** Checking `file.size` inside the multipart parser (or checking `body.byteLength` after reading it entirely) is too late; a malicious actor can upload an extremely large payload and crash the server with OOM before the manual check executes. Hono handles multipart memory streaming safely for storage but will accumulate payload buffers if not constrained.
 **Prevention:** Use a middleware (e.g., `bodyLimit`) that reads the `Content-Length` header or checks the stream size iteratively as chunks arrive, terminating the request gracefully before large amounts of data are buffered in memory.
+
+## 2024-05-18 - [Global Error Handling in Hono]
+**Vulnerability:** Information Disclosure (Stack Trace Leaks)
+**Learning:** Default error handling in Hono can leak internal system details via stack traces in unhandled exceptions.
+**Prevention:** Implement a global error handler (`app.onError`) that sanitizes errors, returns a generic 500 response (`{ error: 'Internal Server Error' }`), and ensures intentional HTTP responses (like 401, 404) via `HTTPException` are preserved using `err.getResponse()`.
