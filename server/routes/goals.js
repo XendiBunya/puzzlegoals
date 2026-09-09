@@ -140,6 +140,26 @@ goals.post('/:id/unarchive', async (c) => {
   return c.json({ goal: rowToGoal(rows[0]) });
 });
 
+// Clone — duplicate as a fresh puzzle with the same steps, all unmarked
+goals.post('/:id/clone', async (c) => {
+  const user = c.get('user');
+  const id = c.req.param('id');
+
+  const rows = await sql`SELECT * FROM goals WHERE id = ${id} AND user_id = ${user.id}`;
+  if (!rows.length) return c.json({ error: 'Not found' }, 404);
+
+  const source = rows[0];
+  const tasks = (source.tasks || []).map((t) => ({ ...t, done: false }));
+
+  const [row] = await sql`
+    INSERT INTO goals (user_id, name, img_url, cols, rows, seed, start_hint, tasks, schema_ver)
+    VALUES (${user.id}, ${source.name + ' (copy)'}, ${source.img_url}, ${source.cols}, ${source.rows}, ${source.seed}, ${JSON.stringify(source.start_hint)}, ${JSON.stringify(tasks)}, ${source.schema_ver || 1})
+    RETURNING *
+  `;
+
+  return c.json({ goal: rowToGoal(row) }, 201);
+});
+
 /** Map a DB row to the goal shape the client expects */
 function rowToGoal(r) {
   return {

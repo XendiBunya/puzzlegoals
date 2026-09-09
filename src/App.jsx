@@ -132,6 +132,11 @@ function GoalBoard({ goal: initial }) {
     navigate('#/');
   };
 
+  const handleClone = async () => {
+    const { goal: cloned } = await api.cloneGoal(goal.id);
+    navigate(`#/goal/${cloned.id}`);
+  };
+
   if (!goal) return null;
 
   return (
@@ -141,6 +146,7 @@ function GoalBoard({ goal: initial }) {
       <div className="footnote">
         <button className="btn-quiet" type="button" onClick={() => navigate('#/')}>Back to puzzles</button>
         <span className="spacer" />
+        <button className="btn-quiet" type="button" onClick={handleClone}>Clone as new</button>
         <button className="btn-quiet" type="button" onClick={handleToggleArchive}>
           {isArchived ? 'Restore this goal' : 'Archive this goal'}
         </button>

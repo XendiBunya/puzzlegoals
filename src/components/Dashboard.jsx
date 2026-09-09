@@ -30,6 +30,11 @@ export default function Dashboard({ onSelect, onNew }) {
     load();
   };
 
+  const handleClone = async (id) => {
+    await api.cloneGoal(id);
+    load();
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('Permanently delete this goal and its puzzle?')) return;
     await api.deleteGoal(id);
@@ -86,6 +91,7 @@ export default function Dashboard({ onSelect, onNew }) {
                 <span className="f-hint">{g.doneSteps}/{g.totalSteps} steps &middot; {g.pieces} pieces</span>
               </div>
               <div className="dash-actions" onClick={(e) => e.stopPropagation()}>
+                <button className="btn-quiet" type="button" onClick={() => handleClone(g.id)}>Clone</button>
                 {tab === 'active' ? (
                   <button className="btn-quiet" type="button" onClick={() => handleArchive(g.id)}>Archive</button>
                 ) : (

@@ -31,6 +31,7 @@ export const patchGoal = (id, action) => request('PATCH', `/api/goals/${id}`, ac
 export const deleteGoal = (id) => request('DELETE', `/api/goals/${id}`);
 export const archiveGoal = (id) => request('POST', `/api/goals/${id}/archive`);
 export const unarchiveGoal = (id) => request('POST', `/api/goals/${id}/unarchive`);
+export const cloneGoal = (id) => request('POST', `/api/goals/${id}/clone`);
 
 // Images
 export async function uploadImage(file) {
