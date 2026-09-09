@@ -137,6 +137,26 @@ function GoalBoard({ goal: initial }) {
     navigate(`#/goal/${cloned.id}`);
   };
 
+  const handleExport = () => {
+    const lines = [`# ${goal.name}`, ''];
+    for (const t of goal.tasks) {
+      const check = t.done ? 'x' : ' ';
+      lines.push(`- [${check}] ${t.text}`);
+      for (const s of (t.subtasks || [])) {
+        const sc = s.done ? 'x' : ' ';
+        lines.push(`  - [${sc}] ${s.text}`);
+      }
+    }
+    lines.push('');
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${goal.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (!goal) return null;
 
   return (
@@ -146,6 +166,7 @@ function GoalBoard({ goal: initial }) {
       <div className="footnote">
         <button className="btn-quiet" type="button" onClick={() => navigate('#/')}>Back to puzzles</button>
         <span className="spacer" />
+        <button className="btn-quiet" type="button" onClick={handleExport}>Export</button>
         <button className="btn-quiet" type="button" onClick={handleClone}>Clone as new</button>
         <button className="btn-quiet" type="button" onClick={handleToggleArchive}>
           {isArchived ? 'Restore this goal' : 'Archive this goal'}
