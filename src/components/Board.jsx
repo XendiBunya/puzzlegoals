@@ -11,6 +11,29 @@ export default function Board({ goal, dispatch }) {
   const placed = revealedTiles(goal.tasks).size;
   const solved = placed === total && total > 0;
 
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(goal.name);
+  const inputRef = useRef(null);
+
+  const startEditing = () => {
+    setDraft(goal.name);
+    setEditing(true);
+    requestAnimationFrame(() => inputRef.current?.select());
+  };
+
+  const commitRename = () => {
+    setEditing(false);
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== goal.name) {
+      dispatch({ type: 'rename', name: trimmed });
+    }
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter') commitRename();
+    if (e.key === 'Escape') setEditing(false);
+  };
+
   const [recutNote, setRecutNote] = useState(null);
   const prevCut = useRef(`${goal.cols}x${goal.rows}`);
 
@@ -32,7 +55,18 @@ export default function Board({ goal, dispatch }) {
   return (
     <>
       <div className="goalbar">
-        <h2>{goal.name}</h2>
+        {editing ? (
+          <input
+            ref={inputRef}
+            className="goal-name-input"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={onKeyDown}
+          />
+        ) : (
+          <h2 className="goal-name-editable" onClick={startEditing} title="Click to rename">{goal.name}</h2>
+        )}
         <span className="spacer" />
         <div className="tally"><b>{placed}</b> / {total} pieces placed</div>
       </div>

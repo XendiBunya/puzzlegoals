@@ -130,6 +130,14 @@ legend{padding:0}
 
 .goalbar{display:flex; align-items:flex-end; gap:1rem; margin-bottom:1rem; flex-wrap:wrap}
 .goalbar h2{font-size:clamp(1.5rem,3.4vw,2.1rem); line-height:1.1; letter-spacing:-.03em}
+.goal-name-editable{cursor:pointer; border-bottom:1px dashed transparent; transition:border-color .15s}
+.goal-name-editable:hover{border-bottom-color:var(--ink-3)}
+.goal-name-input{
+  font-family:"Bricolage Grotesque","Karla",sans-serif; font-weight:700;
+  font-size:clamp(1.5rem,3.4vw,2.1rem); line-height:1.1; letter-spacing:-.03em;
+  background:var(--card); border:1px solid var(--line); border-radius:4px;
+  padding:.1rem .4rem; width:100%; max-width:28ch;
+}
 .goalbar .spacer{flex:1 1 auto}
 .tally{font-family:"DM Mono",monospace; font-size:.8125rem; color:var(--ink-2); white-space:nowrap}
 .tally b{color:var(--ink); font-weight:500; font-size:1.5rem}

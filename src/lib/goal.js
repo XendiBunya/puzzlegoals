@@ -72,9 +72,14 @@ export function removeTask(goal, id) {
   return { ...goal, tasks: absorbTiles(rest, i, orphaned) };
 }
 
+export function renameGoal(goal, name) {
+  return { ...goal, name };
+}
+
 export function reducer(goal, action) {
   switch (action.type) {
     case 'create': return createGoal(action.payload);
+    case 'rename': return renameGoal(goal, action.name);
     case 'add':    return addTask(goal, action.text, action.hint);
     case 'toggle': return toggleTask(goal, action.id);
     case 'edit':    return editTask(goal, action.id, action.text);
