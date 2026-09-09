@@ -7,8 +7,12 @@ const PieceTick = () => (
   </svg>
 );
 
-function SubtaskList({ task, onToggleSubtask, onEditSubtask, onRemoveSubtask, onAddSubtask }) {
+function SubtaskList({ task, onToggleSubtask, onEditSubtask, onRemoveSubtask, onAddSubtask, onReorderSubtask }) {
   const [draft, setDraft] = useState('');
+  const listRef = useRef(null);
+  const dragRef = useRef(null);
+  const [dragFrom, setDragFrom] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
 
   const submit = (e) => {
     if (e.key !== 'Enter') return;
@@ -18,39 +22,89 @@ function SubtaskList({ task, onToggleSubtask, onEditSubtask, onRemoveSubtask, on
     onAddSubtask(task.id, v);
   };
 
+  const getIndex = (y) => {
+    if (!listRef.current) return -1;
+    const items = [...listRef.current.querySelectorAll('.subtask')];
+    for (let i = 0; i < items.length; i++) {
+      const rect = items[i].getBoundingClientRect();
+      if (y < rect.top + rect.height / 2) return i;
+    }
+    return items.length - 1;
+  };
+
+  const onPointerDown = (e, index) => {
+    if (!e.target.closest('.sub-drag-handle')) return;
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { fromIndex: index, overIndex: index };
+    setDragFrom(index);
+    setDragOver(index);
+  };
+
+  const onPointerMove = (e) => {
+    if (!dragRef.current) return;
+    const over = getIndex(e.clientY);
+    if (over !== dragRef.current.overIndex) {
+      dragRef.current.overIndex = over;
+      setDragOver(over);
+    }
+  };
+
+  const onPointerUp = () => {
+    if (!dragRef.current) return;
+    const { fromIndex, overIndex } = dragRef.current;
+    dragRef.current = null;
+    setDragFrom(null);
+    setDragOver(null);
+    if (fromIndex !== overIndex) {
+      onReorderSubtask(task.id, fromIndex, overIndex);
+    }
+  };
+
   const subs = task.subtasks || [];
   if (!subs.length && task.done) return null;
 
   return (
-    <div className="subtasks">
-      {subs.map((s) => (
-        <div key={s.id} className={`subtask${s.done ? ' done' : ''}`}>
-          <button
-            className="subtask-tick"
-            type="button"
-            aria-pressed={s.done}
-            aria-label={`${s.done ? 'Undo' : 'Complete'}: ${s.text}`}
-            onClick={() => onToggleSubtask(task.id, s.id)}
+    <div className="subtasks" ref={listRef}>
+      {subs.map((s, i) => {
+        const isDragging = dragFrom === i;
+        const isOver = dragFrom != null && dragOver === i && dragFrom !== i;
+        return (
+          <div
+            key={s.id}
+            className={`subtask${s.done ? ' done' : ''}${isDragging ? ' dragging' : ''}${isOver ? ' drop-target' : ''}`}
+            onPointerDown={(e) => onPointerDown(e, i)}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
           >
-            {s.done ? '✓' : '○'}
-          </button>
-          <input
-            className="t"
-            value={s.text}
-            aria-label="Subtask"
-            onChange={(e) => onEditSubtask(task.id, s.id, e.target.value)}
-          />
-          <button
-            className="x"
-            type="button"
-            title="Remove subtask"
-            aria-label={`Remove subtask: ${s.text}`}
-            onClick={() => onRemoveSubtask(task.id, s.id)}
-          >
-            &times;
-          </button>
-        </div>
-      ))}
+            <span className="sub-drag-handle" aria-hidden="true" style={{ touchAction: 'none' }}>&#x2261;</span>
+            <button
+              className="subtask-tick"
+              type="button"
+              aria-pressed={s.done}
+              aria-label={`${s.done ? 'Undo' : 'Complete'}: ${s.text}`}
+              onClick={() => onToggleSubtask(task.id, s.id)}
+            >
+              {s.done ? '✓' : '○'}
+            </button>
+            <input
+              className="t"
+              value={s.text}
+              aria-label="Subtask"
+              onChange={(e) => onEditSubtask(task.id, s.id, e.target.value)}
+            />
+            <button
+              className="x"
+              type="button"
+              title="Remove subtask"
+              aria-label={`Remove subtask: ${s.text}`}
+              onClick={() => onRemoveSubtask(task.id, s.id)}
+            >
+              &times;
+            </button>
+          </div>
+        );
+      })}
       <div className="subtask-add">
         <input
           placeholder="Add a subtask"
@@ -66,7 +120,7 @@ function SubtaskList({ task, onToggleSubtask, onEditSubtask, onRemoveSubtask, on
 
 export default function TaskPanel({
   tasks, onToggle, onEdit, onRemove, onAdd, onReorder,
-  onAddSubtask, onToggleSubtask, onEditSubtask, onRemoveSubtask,
+  onAddSubtask, onToggleSubtask, onEditSubtask, onReorderSubtask, onRemoveSubtask,
 }) {
   const [draft, setDraft] = useState('');
   const [expanded, setExpanded] = useState({});
@@ -207,6 +261,7 @@ export default function TaskPanel({
                   onAddSubtask={onAddSubtask}
                   onToggleSubtask={onToggleSubtask}
                   onEditSubtask={onEditSubtask}
+                  onReorderSubtask={onReorderSubtask}
                   onRemoveSubtask={onRemoveSubtask}
                 />
               )}

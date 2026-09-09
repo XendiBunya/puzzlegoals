@@ -219,6 +219,16 @@ legend{padding:0}
 .subtask.done .subtask-tick{color:var(--accent)}
 .subtask .x{font-size:.75rem}
 .subtask:hover .x{opacity:1}
+.sub-drag-handle{
+  flex:none; width:14px; text-align:center; cursor:grab;
+  color:var(--ink-3); font-size:.85rem; line-height:1; user-select:none;
+  opacity:0; transition:opacity .15s ease;
+}
+.subtask:hover .sub-drag-handle{opacity:1}
+.sub-drag-handle:active{cursor:grabbing}
+.subtask.dragging{opacity:.35}
+.subtask.drop-target{box-shadow:inset 0 2px 0 0 var(--accent)}
+
 .subtask-add{padding:.15rem 0}
 .subtask-add input{border:0; background:none; padding:.15rem 0; font-size:.8125rem; width:100%}
 .subtask-add input:focus{outline:none; border-bottom:1px solid var(--accent)}

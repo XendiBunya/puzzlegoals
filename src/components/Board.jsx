@@ -89,6 +89,7 @@ export default function Board({ goal, dispatch }) {
           onAddSubtask={(taskId, text) => dispatch({ type: 'addSubtask', taskId, text })}
           onToggleSubtask={(taskId, subtaskId) => dispatch({ type: 'toggleSubtask', taskId, subtaskId })}
           onEditSubtask={(taskId, subtaskId, text) => dispatch({ type: 'editSubtask', taskId, subtaskId, text })}
+          onReorderSubtask={(taskId, from, to) => dispatch({ type: 'reorderSubtask', taskId, from, to })}
           onRemoveSubtask={(taskId, subtaskId) => dispatch({ type: 'removeSubtask', taskId, subtaskId })}
         />
       </div>

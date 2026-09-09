@@ -116,6 +116,20 @@ export function editSubtask(goal, taskId, subtaskId, text) {
   };
 }
 
+export function reorderSubtask(goal, taskId, fromIndex, toIndex) {
+  if (fromIndex === toIndex) return goal;
+  return {
+    ...goal,
+    tasks: goal.tasks.map((t) => {
+      if (t.id !== taskId) return t;
+      const subtasks = [...(t.subtasks || [])];
+      const [moved] = subtasks.splice(fromIndex, 1);
+      subtasks.splice(toIndex, 0, moved);
+      return { ...t, subtasks };
+    }),
+  };
+}
+
 export function removeSubtask(goal, taskId, subtaskId) {
   return {
     ...goal,
@@ -166,6 +180,7 @@ export function reducer(goal, action) {
     case 'addSubtask':      return addSubtask(goal, action.taskId, action.text);
     case 'toggleSubtask':   return toggleSubtask(goal, action.taskId, action.subtaskId);
     case 'editSubtask':     return editSubtask(goal, action.taskId, action.subtaskId, action.text);
+    case 'reorderSubtask':  return reorderSubtask(goal, action.taskId, action.from, action.to);
     case 'removeSubtask':   return removeSubtask(goal, action.taskId, action.subtaskId);
     case 'reset':           return null;
     default:                return goal;
