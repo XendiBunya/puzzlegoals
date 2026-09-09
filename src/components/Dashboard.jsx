@@ -83,12 +83,12 @@ export default function Dashboard({ onSelect, onNew }) {
               <div className="dash-thumb">
                 <img src={g.img_url} alt={g.name} />
                 <div className="dash-progress">
-                  <span className="mono">{Math.round((g.doneSteps / g.totalSteps) * 100)}%</span>
+                  <span className="mono">{g.totalUnits ? Math.round((g.doneUnits / g.totalUnits) * 100) : 0}%</span>
                 </div>
               </div>
               <div className="dash-info">
                 <strong>{g.name}</strong>
-                <span className="f-hint">{g.doneSteps}/{g.totalSteps} steps &middot; {g.pieces} pieces</span>
+                <span className="f-hint">{g.doneUnits}/{g.totalUnits} done &middot; {g.totalSteps} steps &middot; {g.pieces} pieces</span>
               </div>
               <div className="dash-actions" onClick={(e) => e.stopPropagation()}>
                 <button className="btn-quiet" type="button" onClick={() => handleClone(g.id)}>Clone</button>

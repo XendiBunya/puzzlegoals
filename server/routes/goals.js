@@ -23,20 +23,33 @@ goals.get('/', async (c) => {
         ORDER BY updated_at DESC
       `;
 
-  const summaries = rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    img_url: r.img_url,
-    cols: r.cols,
-    rows: r.rows,
-    pieces: r.cols * r.rows,
-    placed: (r.tasks || []).filter((t) => t.done).length,
-    totalSteps: (r.tasks || []).length,
-    doneSteps: (r.tasks || []).filter((t) => t.done).length,
-    archived_at: r.archived_at,
-    created_at: r.created_at,
-    updated_at: r.updated_at,
-  }));
+  const summaries = rows.map((r) => {
+    const tasks = r.tasks || [];
+    let totalUnits = 0, doneUnits = 0;
+    for (const t of tasks) {
+      if (t.subtasks?.length) {
+        totalUnits += t.subtasks.length;
+        doneUnits += t.subtasks.filter((s) => s.done).length;
+      } else {
+        totalUnits += 1;
+        doneUnits += t.done ? 1 : 0;
+      }
+    }
+    return {
+      id: r.id,
+      name: r.name,
+      img_url: r.img_url,
+      cols: r.cols,
+      rows: r.rows,
+      pieces: r.cols * r.rows,
+      totalUnits,
+      doneUnits,
+      totalSteps: tasks.length,
+      archived_at: r.archived_at,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+    };
+  });
 
   return c.json({ goals: summaries });
 });
@@ -149,7 +162,11 @@ goals.post('/:id/clone', async (c) => {
   if (!rows.length) return c.json({ error: 'Not found' }, 404);
 
   const source = rows[0];
-  const tasks = (source.tasks || []).map((t) => ({ ...t, done: false }));
+  const tasks = (source.tasks || []).map((t) => ({
+    ...t,
+    done: false,
+    subtasks: (t.subtasks || []).map((s) => ({ ...s, done: false })),
+  }));
 
   const [row] = await sql`
     INSERT INTO goals (user_id, name, img_url, cols, rows, seed, start_hint, tasks, schema_ver)

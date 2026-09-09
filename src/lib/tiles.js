@@ -32,7 +32,10 @@ export function owners(tasks, n) {
 /** The tiles of every finished step — the set that is actually on the board. */
 export function revealedTiles(tasks) {
   const set = new Set();
-  tasks.forEach((t) => { if (t.done) (t.tiles || []).forEach((k) => set.add(k)); });
+  tasks.forEach((t) => {
+    const done = t.subtasks?.length ? t.subtasks.every((s) => s.done) : t.done;
+    if (done) (t.tiles || []).forEach((k) => set.add(k));
+  });
   return set;
 }
 

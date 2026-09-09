@@ -46,8 +46,86 @@ export function addTask(goal, text, hint) {
   return { ...goal, tasks: borrowTileFor(tasks, t.id) };
 }
 
+/** Whether a task is effectively complete (all subtasks done, or no subtasks and manually done). */
+export function isTaskDone(t) {
+  if (t.subtasks?.length) return t.subtasks.every((s) => s.done);
+  return !!t.done;
+}
+
+/** Completion units: each subtask counts as 1; tasks without subtasks count as 1. */
+export function completionUnits(tasks) {
+  let total = 0, done = 0;
+  for (const t of tasks) {
+    if (t.subtasks?.length) {
+      total += t.subtasks.length;
+      done += t.subtasks.filter((s) => s.done).length;
+    } else {
+      total += 1;
+      done += t.done ? 1 : 0;
+    }
+  }
+  return { total, done };
+}
+
 export function toggleTask(goal, id) {
-  return { ...goal, tasks: goal.tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)) };
+  return {
+    ...goal,
+    tasks: goal.tasks.map((t) => {
+      if (t.id !== id) return t;
+      if (t.subtasks?.length) {
+        const allDone = t.subtasks.every((s) => s.done);
+        const subtasks = t.subtasks.map((s) => ({ ...s, done: !allDone }));
+        return { ...t, subtasks, done: !allDone };
+      }
+      return { ...t, done: !t.done };
+    }),
+  };
+}
+
+export function addSubtask(goal, taskId, text) {
+  return {
+    ...goal,
+    tasks: goal.tasks.map((t) => {
+      if (t.id !== taskId) return t;
+      const subtasks = [...(t.subtasks || []), { id: uid(), text, done: false }];
+      return { ...t, subtasks, done: false };
+    }),
+  };
+}
+
+export function toggleSubtask(goal, taskId, subtaskId) {
+  return {
+    ...goal,
+    tasks: goal.tasks.map((t) => {
+      if (t.id !== taskId) return t;
+      const subtasks = (t.subtasks || []).map((s) =>
+        s.id === subtaskId ? { ...s, done: !s.done } : s
+      );
+      return { ...t, subtasks, done: subtasks.every((s) => s.done) };
+    }),
+  };
+}
+
+export function editSubtask(goal, taskId, subtaskId, text) {
+  return {
+    ...goal,
+    tasks: goal.tasks.map((t) => {
+      if (t.id !== taskId) return t;
+      return { ...t, subtasks: (t.subtasks || []).map((s) => s.id === subtaskId ? { ...s, text } : s) };
+    }),
+  };
+}
+
+export function removeSubtask(goal, taskId, subtaskId) {
+  return {
+    ...goal,
+    tasks: goal.tasks.map((t) => {
+      if (t.id !== taskId) return t;
+      const subtasks = (t.subtasks || []).filter((s) => s.id !== subtaskId);
+      if (!subtasks.length) return { ...t, subtasks: [], done: t.done };
+      return { ...t, subtasks, done: subtasks.every((s) => s.done) };
+    }),
+  };
 }
 
 export function editTask(goal, id, text) {
@@ -78,14 +156,18 @@ export function renameGoal(goal, name) {
 
 export function reducer(goal, action) {
   switch (action.type) {
-    case 'create': return createGoal(action.payload);
-    case 'rename': return renameGoal(goal, action.name);
-    case 'add':    return addTask(goal, action.text, action.hint);
-    case 'toggle': return toggleTask(goal, action.id);
-    case 'edit':    return editTask(goal, action.id, action.text);
-    case 'reorder': return reorderTask(goal, action.from, action.to);
-    case 'remove':  return removeTask(goal, action.id);
-    case 'reset':  return null;
-    default:       return goal;
+    case 'create':          return createGoal(action.payload);
+    case 'rename':          return renameGoal(goal, action.name);
+    case 'add':             return addTask(goal, action.text, action.hint);
+    case 'toggle':          return toggleTask(goal, action.id);
+    case 'edit':            return editTask(goal, action.id, action.text);
+    case 'reorder':         return reorderTask(goal, action.from, action.to);
+    case 'remove':          return removeTask(goal, action.id);
+    case 'addSubtask':      return addSubtask(goal, action.taskId, action.text);
+    case 'toggleSubtask':   return toggleSubtask(goal, action.taskId, action.subtaskId);
+    case 'editSubtask':     return editSubtask(goal, action.taskId, action.subtaskId, action.text);
+    case 'removeSubtask':   return removeSubtask(goal, action.taskId, action.subtaskId);
+    case 'reset':           return null;
+    default:                return goal;
   }
 }

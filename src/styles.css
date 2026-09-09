@@ -195,15 +195,33 @@ legend{padding:0}
 .panel-head{display:flex; align-items:center; gap:.6rem; padding:.85rem 1rem; border-bottom:1px solid var(--line-2)}
 .panel-head .spacer{flex:1}
 .tasks{list-style:none; margin:0; padding:.35rem; display:flex; flex-direction:column; gap:1px}
-.task{display:flex; align-items:center; gap:.7rem; padding:.42rem .45rem; border-radius:7px}
+.task{display:flex; flex-direction:column; padding:.42rem .45rem; border-radius:7px}
 .task:hover{background:var(--line-2)}
+.task-row{display:flex; align-items:center; gap:.7rem}
 .task .t{flex:1; min-width:0; border:0; background:none; padding:.1rem 0; font-size:.9375rem}
 .task .t:focus{outline:none; border-bottom:1px solid var(--accent)}
-.task.done .t{color:var(--ink-3); text-decoration:line-through; text-decoration-thickness:1px}
+.task.done > .task-row .t{color:var(--ink-3); text-decoration:line-through; text-decoration-thickness:1px}
 .task .x{opacity:0}
 .task .num{flex:none; width:1.8em; text-align:right; font-family:"DM Mono",monospace; font-size:.75rem; color:var(--ink-3)}
 .task.shared .num{opacity:.38}
 .task:hover .x, .task .x:focus-visible{opacity:1}
+
+.expand-btn{border:0; background:none; padding:.1rem .3rem; font-size:.7rem; color:var(--ink-3); opacity:0; transition:opacity .15s}
+.task:hover .expand-btn, .expand-btn:focus-visible{opacity:1}
+.subtask-count{font-size:.7rem; color:var(--accent)}
+.task:hover .subtask-count, .subtask-count:not(:empty){opacity:1}
+.subtask-hint{font-size:.65rem; letter-spacing:.03em}
+
+.subtasks{margin-left:4.8rem; padding:.25rem 0 .15rem; display:flex; flex-direction:column; gap:2px}
+.subtask{display:flex; align-items:center; gap:.5rem; padding:.15rem 0; font-size:.875rem}
+.subtask.done .t{color:var(--ink-3); text-decoration:line-through; text-decoration-thickness:1px}
+.subtask-tick{border:0; background:none; padding:0; width:20px; height:20px; display:grid; place-items:center; font-size:.8rem; color:var(--ink-3); cursor:pointer}
+.subtask.done .subtask-tick{color:var(--accent)}
+.subtask .x{font-size:.75rem}
+.subtask:hover .x{opacity:1}
+.subtask-add{padding:.15rem 0}
+.subtask-add input{border:0; background:none; padding:.15rem 0; font-size:.8125rem; width:100%}
+.subtask-add input:focus{outline:none; border-bottom:1px solid var(--accent)}
 
 .drag-handle{
   flex:none; width:18px; text-align:center; cursor:grab;
@@ -222,7 +240,7 @@ legend{padding:0}
 .tick svg{width:22px; height:22px; overflow:visible}
 .tick .sil{fill:none; stroke:var(--ink-3); stroke-width:1.5; transition:fill .28s ease, stroke .2s ease}
 .tick:hover .sil{stroke:var(--accent)}
-.task.done .tick .sil{fill:var(--accent); stroke:var(--accent)}
+.task.done > .task-row .tick .sil{fill:var(--accent); stroke:var(--accent)}
 
 .addrow{display:flex; align-items:center; gap:.7rem; padding:.5rem .8rem .8rem; border-top:1px solid var(--line-2)}
 .addrow .plus{flex:none; width:26px; text-align:center; color:var(--ink-3); font-size:1.1rem; line-height:1}
