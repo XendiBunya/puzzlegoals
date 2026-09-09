@@ -33,6 +33,11 @@ export const archiveGoal = (id) => request('POST', `/api/goals/${id}/archive`);
 export const unarchiveGoal = (id) => request('POST', `/api/goals/${id}/unarchive`);
 export const cloneGoal = (id) => request('POST', `/api/goals/${id}/clone`);
 
+// Templates
+export const listTemplates = () => request('GET', '/api/templates');
+export const createTemplate = (t) => request('POST', '/api/templates', t);
+export const deleteTemplate = (id) => request('DELETE', `/api/templates/${id}`);
+
 // Images
 export async function uploadImage(file) {
   const token = await getToken();

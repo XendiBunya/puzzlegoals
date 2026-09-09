@@ -6,9 +6,16 @@ import { deal, borrowTileFor, absorbTiles } from './tiles.js';
 
 export const SCHEMA = 1;
 
-export function createGoal({ name, steps, img, template }) {
+export function createGoal({ name, steps, img, template, stepMeta }) {
   const cut = fitCut(template.cols, template.rows, steps.length);
-  const tasks = steps.map((text) => ({ id: uid(), text, done: false, tiles: [] }));
+  const tasks = steps.map((text, i) => {
+    const t = { id: uid(), text, done: false, tiles: [] };
+    const meta = stepMeta?.[i];
+    if (meta?.subtasks?.length) {
+      t.subtasks = meta.subtasks.map((s) => ({ id: uid(), text: s.text, done: false }));
+    }
+    return t;
+  });
   return {
     schema: SCHEMA,
     name,

@@ -137,6 +137,17 @@ function GoalBoard({ goal: initial }) {
     navigate(`#/goal/${cloned.id}`);
   };
 
+  const [savedTemplate, setSavedTemplate] = useState(false);
+  const handleSaveTemplate = async () => {
+    const steps = goal.tasks.map((t) => ({
+      text: t.text,
+      subtasks: (t.subtasks || []).map((s) => ({ text: s.text })),
+    }));
+    await api.createTemplate({ name: goal.name, steps });
+    setSavedTemplate(true);
+    setTimeout(() => setSavedTemplate(false), 2000);
+  };
+
   const handleExport = () => {
     const lines = [`# ${goal.name}`, ''];
     for (const t of goal.tasks) {
@@ -166,6 +177,9 @@ function GoalBoard({ goal: initial }) {
       <div className="footnote">
         <button className="btn-quiet" type="button" onClick={() => navigate('#/')}>Back to puzzles</button>
         <span className="spacer" />
+        <button className="btn-quiet" type="button" onClick={handleSaveTemplate}>
+          {savedTemplate ? 'Saved!' : 'Save as template'}
+        </button>
         <button className="btn-quiet" type="button" onClick={handleExport}>Export</button>
         <button className="btn-quiet" type="button" onClick={handleClone}>Clone as new</button>
         <button className="btn-quiet" type="button" onClick={handleToggleArchive}>

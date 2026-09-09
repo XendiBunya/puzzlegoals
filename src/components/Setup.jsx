@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { START_TEMPLATES, fitCut, tileCount, suggestTemplate } from '../lib/cuts.js';
 import { builtInCovers } from '../lib/covers.js';
 import { createGoal } from '../lib/goal.js';
-import { uploadImage } from '../lib/api.js';
+import { uploadImage, listTemplates, deleteTemplate } from '../lib/api.js';
 
 const DRAFT_KEY = 'puzzlegoals.setup-draft';
 
@@ -26,6 +26,7 @@ export default function Setup({ onCreate }) {
   const saved = useMemo(() => loadDraft(), []);
   const [name, setName] = useState(saved?.name || '');
   const [steps, setSteps] = useState(saved?.steps || []);
+  const [stepMeta, setStepMeta] = useState(null);
   const [draft, setDraft] = useState('');
   const [coverIndex, setCoverIndex] = useState(saved?.coverIndex ?? 0);
   const [photoFile, setPhotoFile] = useState(null);
@@ -34,6 +35,13 @@ export default function Setup({ onCreate }) {
   const [pinnedTemplate, setPinned] = useState(saved?.pinnedTemplate ?? false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState(null);
+
+  const [userTemplates, setUserTemplates] = useState([]);
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  useEffect(() => {
+    listTemplates().then((d) => setUserTemplates(d.templates || [])).catch(() => {});
+  }, []);
 
   // Auto-save draft to localStorage on changes
   useEffect(() => {
@@ -47,17 +55,38 @@ export default function Setup({ onCreate }) {
 
   const addSteps = (text) => {
     const parts = text.split('\n')
-      .map((s) => s.replace(/^\s*(?:[-*\u2022]|\d+[.)])\s*/, '').trim())
+      .map((s) => s.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim())
       .filter(Boolean);
     if (!parts.length) return;
     const next = [...steps, ...parts];
     setSteps(next);
+    setStepMeta(null);
     if (!pinnedTemplate) setTemplate(suggestTemplate(next.length));
+  };
+
+  const applyTemplate = (tpl) => {
+    setName(tpl.name);
+    const tplSteps = tpl.steps || [];
+    const stepTexts = tplSteps.map((s) => s.text || s);
+    const meta = tplSteps.map((s) => ({
+      subtasks: (s.subtasks || []).map((sub) => ({ text: sub.text || sub })),
+    }));
+    setSteps(stepTexts);
+    setStepMeta(meta.some((m) => m.subtasks.length) ? meta : null);
+    if (!pinnedTemplate) setTemplate(suggestTemplate(stepTexts.length));
+    setShowTemplates(false);
+  };
+
+  const handleDeleteTemplate = async (e, id) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this template?')) return;
+    await deleteTemplate(id);
+    setUserTemplates((prev) => prev.filter((t) => t.id !== id));
   };
 
   const note = !steps.length ? "Add some steps and we'll suggest a cut."
     : steps.length > f ? `${steps.length} steps is past the finest cut (${f} pieces), so some steps will share a tile.`
-    : f > p ? `${steps.length} steps won't fit a ${p}-piece cut, so it starts at ${f} (${fit.cols} \u00d7 ${fit.rows}).`
+    : f > p ? `${steps.length} steps won't fit a ${p}-piece cut, so it starts at ${f} (${fit.cols} × ${fit.rows}).`
     : steps.length === p ? 'One step, one piece. Clean.'
     : `Each step lays down about ${(p / steps.length).toFixed(1)} pieces. Add more steps and the cut gets finer.`;
 
@@ -93,6 +122,7 @@ export default function Setup({ onCreate }) {
         steps,
         img: imgUrl,
         template: pick,
+        stepMeta,
       });
 
       // Send to server. The goal from createGoal has the shape the server expects
@@ -122,6 +152,37 @@ export default function Setup({ onCreate }) {
         Each step you finish sets another piece down.
       </p>
 
+      {userTemplates.length > 0 && (
+        <fieldset>
+          <Head title="Start from a template" hint={`${userTemplates.length} saved`} />
+          {showTemplates ? (
+            <div className="template-list">
+              {userTemplates.map((tpl) => (
+                <div key={tpl.id} className="template-item" onClick={() => applyTemplate(tpl)}>
+                  <div className="template-item-info">
+                    <strong>{tpl.name}</strong>
+                    <span className="f-hint">
+                      {(tpl.steps || []).length} steps
+                      {(() => {
+                        const sc = (tpl.steps || []).reduce((n, s) => n + (s.subtasks?.length || 0), 0);
+                        return sc ? ` · ${sc} subtasks` : '';
+                      })()}
+                    </span>
+                  </div>
+                  <button className="x" type="button" title="Delete template"
+                    onClick={(e) => handleDeleteTemplate(e, tpl.id)}>&times;</button>
+                </div>
+              ))}
+              <button className="btn-quiet" type="button" onClick={() => setShowTemplates(false)}>Cancel</button>
+            </div>
+          ) : (
+            <button className="btn-quiet" type="button" onClick={() => setShowTemplates(true)}>
+              Choose a template...
+            </button>
+          )}
+        </fieldset>
+      )}
+
       <fieldset>
         <Head title="The goal" hint="one sentence, present tense" />
         <input
@@ -133,7 +194,7 @@ export default function Setup({ onCreate }) {
       </fieldset>
 
       <fieldset>
-        <Head title="The steps" hint={steps.length ? `${steps.length} step${steps.length === 1 ? '' : 's'}` : '8\u201320 works best'} />
+        <Head title="The steps" hint={steps.length ? `${steps.length} step${steps.length === 1 ? '' : 's'}` : '8–20 works best'} />
         <ul className="steplist">
           {steps.map((s, i) => (
             <li key={i}>
@@ -149,7 +210,7 @@ export default function Setup({ onCreate }) {
         </ul>
         <input
           className="field" aria-label="Add a step" value={draft}
-          placeholder="Type a step, press Enter  \u00b7  or paste a whole list"
+          placeholder="Type a step, press Enter  ·  or paste a whole list"
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSteps(draft); setDraft(''); } }}
           onPaste={(e) => {

@@ -19,6 +19,16 @@ CREATE TABLE IF NOT EXISTS goals (
 CREATE INDEX IF NOT EXISTS idx_goals_user ON goals(user_id);
 CREATE INDEX IF NOT EXISTS idx_goals_user_active ON goals(user_id) WHERE archived_at IS NULL;
 
+CREATE TABLE IF NOT EXISTS templates (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  steps       JSONB NOT NULL DEFAULT '[]',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_templates_user ON templates(user_id);
+
 CREATE TABLE IF NOT EXISTS images (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      UUID NOT NULL REFERENCES neon_auth."user"(id) ON DELETE CASCADE,

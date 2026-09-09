@@ -12,6 +12,7 @@ import 'dotenv/config';
 
 import goals from './routes/goals.js';
 import images from './routes/images.js';
+import templates from './routes/templates.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const distPath = join(__dirname, '..', 'dist');
@@ -20,6 +21,7 @@ const distPath = join(__dirname, '..', 'dist');
 const api = new Hono();
 api.route('/goals', goals);
 api.route('/images', images);
+api.route('/templates', templates);
 const startedAt = new Date().toISOString();
 let gitCommit = 'unknown';
 try { gitCommit = execSync('git rev-parse --short HEAD').toString().trim(); } catch {}
