@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as api from '../lib/api.js';
 
-export default function Templates({ onBack }) {
+export default function Templates({ onBack, onUse }) {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,6 +55,7 @@ export default function Templates({ onBack }) {
                   </ul>
                 </div>
                 <div className="template-card-actions">
+                  <button className="btn-quiet" type="button" onClick={() => onUse(tpl.id)}>Use</button>
                   <button className="btn-quiet" type="button" style={{ color: 'var(--brass)' }}
                     onClick={() => handleDelete(tpl.id)}>Delete</button>
                 </div>

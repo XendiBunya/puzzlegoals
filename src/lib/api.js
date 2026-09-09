@@ -35,6 +35,7 @@ export const cloneGoal = (id) => request('POST', `/api/goals/${id}/clone`);
 
 // Templates
 export const listTemplates = () => request('GET', '/api/templates');
+export const getTemplate = (id) => request('GET', `/api/templates/${id}`);
 export const createTemplate = (t) => request('POST', '/api/templates', t);
 export const deleteTemplate = (id) => request('DELETE', `/api/templates/${id}`);
 

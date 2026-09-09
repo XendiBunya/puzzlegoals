@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { START_TEMPLATES, fitCut, tileCount, suggestTemplate } from '../lib/cuts.js';
 import { builtInCovers } from '../lib/covers.js';
 import { createGoal } from '../lib/goal.js';
-import { uploadImage, listTemplates, deleteTemplate } from '../lib/api.js';
+import { uploadImage, listTemplates, getTemplate, deleteTemplate } from '../lib/api.js';
 
 const DRAFT_KEY = 'puzzlegoals.setup-draft';
 
@@ -21,7 +21,7 @@ function clearDraft() {
   try { localStorage.removeItem(DRAFT_KEY); } catch {}
 }
 
-export default function Setup({ onCreate }) {
+export default function Setup({ onCreate, fromTemplateId }) {
   const covers = useMemo(() => builtInCovers(), []);
   const saved = useMemo(() => loadDraft(), []);
   const [name, setName] = useState(saved?.name || '');
@@ -42,6 +42,21 @@ export default function Setup({ onCreate }) {
   useEffect(() => {
     listTemplates().then((d) => setUserTemplates(d.templates || [])).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!fromTemplateId) return;
+    getTemplate(fromTemplateId).then(({ template: tpl }) => {
+      if (!tpl) return;
+      const tplSteps = tpl.steps || [];
+      setName(tpl.name);
+      setSteps(tplSteps.map((s) => s.text || s));
+      const meta = tplSteps.map((s) => ({
+        subtasks: (s.subtasks || []).map((sub) => ({ text: sub.text || sub })),
+      }));
+      setStepMeta(meta.some((m) => m.subtasks.length) ? meta : null);
+      setTemplate(suggestTemplate(tplSteps.length));
+    }).catch(() => {});
+  }, [fromTemplateId]);
 
   // Auto-save draft to localStorage on changes
   useEffect(() => {

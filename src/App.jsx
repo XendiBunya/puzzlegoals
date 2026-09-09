@@ -83,9 +83,10 @@ export default function App() {
   } else if (route === '#/account') {
     screen = <Account user={user} onUserChange={setUser} onLogout={handleLogout} />;
   } else if (route === '#/templates') {
-    screen = <Templates onBack={() => navigate('#/')} />;
-  } else if (route === '#/new') {
-    screen = <Setup onCreate={handleCreate} />;
+    screen = <Templates onBack={() => navigate('#/')} onUse={(id) => navigate(`#/new/from/${id}`)} />;
+  } else if (route.startsWith('#/new')) {
+    const fromMatch = route.match(/^#\/new\/from\/(.+)$/);
+    screen = <Setup onCreate={handleCreate} fromTemplateId={fromMatch?.[1] || null} />;
   } else if (route.startsWith('#/goal/') && goalData) {
     screen = <GoalBoard goal={goalData} />;
   } else if (route.startsWith('#/goal/') && loadingGoal) {
