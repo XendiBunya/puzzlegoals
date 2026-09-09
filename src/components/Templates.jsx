@@ -4,6 +4,7 @@ import * as api from '../lib/api.js';
 export default function Templates({ onBack, onUse }) {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState({});
 
   const load = async () => {
     setLoading(true);
@@ -14,10 +15,18 @@ export default function Templates({ onBack, onUse }) {
 
   useEffect(() => { load(); }, []);
 
-  const handleDelete = async (id) => {
+  const toggleExpand = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
     if (!window.confirm('Delete this template?')) return;
     await api.deleteTemplate(id);
     setTemplates((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleUse = (e, id) => {
+    e.stopPropagation();
+    onUse(id);
   };
 
   return (
@@ -37,27 +46,40 @@ export default function Templates({ onBack, onUse }) {
       ) : (
         <div className="template-grid">
           {templates.map((tpl) => {
-            const subtaskCount = (tpl.steps || []).reduce((n, s) => n + (s.subtasks?.length || 0), 0);
+            const steps = tpl.steps || [];
+            const subtaskCount = steps.reduce((n, s) => n + (s.subtasks?.length || 0), 0);
+            const isExpanded = expanded[tpl.id];
+            const displaySteps = isExpanded ? steps : steps.slice(0, 5);
             return (
-              <div key={tpl.id} className="template-card">
+              <div key={tpl.id} className="template-card" onClick={() => toggleExpand(tpl.id)}
+                style={{ cursor: 'pointer' }}>
                 <div className="template-card-info">
                   <strong>{tpl.name}</strong>
                   <span className="f-hint">
-                    {(tpl.steps || []).length} steps{subtaskCount ? ` · ${subtaskCount} subtasks` : ''}
+                    {steps.length} steps{subtaskCount ? ` · ${subtaskCount} subtasks` : ''}
                   </span>
                   <ul className="template-steps-preview">
-                    {(tpl.steps || []).slice(0, 5).map((s, i) => (
-                      <li key={i} className="f-hint">{s.text || s}</li>
+                    {displaySteps.map((s, i) => (
+                      <li key={i}>
+                        <span className="f-hint">{s.text || s}</span>
+                        {isExpanded && s.subtasks?.length > 0 && (
+                          <ul className="template-substeps-preview">
+                            {s.subtasks.map((sub, j) => (
+                              <li key={j} className="f-hint">{sub.text || sub}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
                     ))}
-                    {(tpl.steps || []).length > 5 && (
-                      <li className="f-hint">+{(tpl.steps || []).length - 5} more</li>
+                    {!isExpanded && steps.length > 5 && (
+                      <li className="f-hint template-more">+{steps.length - 5} more — click to expand</li>
                     )}
                   </ul>
                 </div>
-                <div className="template-card-actions">
-                  <button className="btn-quiet" type="button" onClick={() => onUse(tpl.id)}>Use</button>
+                <div className="template-card-actions" onClick={(e) => e.stopPropagation()}>
+                  <button className="btn-quiet" type="button" onClick={(e) => handleUse(e, tpl.id)}>Use</button>
                   <button className="btn-quiet" type="button" style={{ color: 'var(--brass)' }}
-                    onClick={() => handleDelete(tpl.id)}>Delete</button>
+                    onClick={(e) => handleDelete(e, tpl.id)}>Delete</button>
                 </div>
               </div>
             );
