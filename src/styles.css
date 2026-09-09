@@ -314,6 +314,20 @@ legend{padding:0}
 .dash-actions .btn-quiet{font-size:.75rem; padding:.25rem .5rem}
 .dash-empty{text-align:center; padding:3rem 1rem}
 
+/* ---------- templates ---------- */
+.template-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem}
+.template-card{
+  background:var(--card); border:1px solid var(--line-2); border-radius:10px;
+  padding:.75rem 1rem; display:flex; flex-direction:column; gap:.5rem;
+}
+.template-card-info{display:flex; flex-direction:column; gap:.15rem}
+.template-card-info strong{font-size:.9375rem; word-break:break-word}
+.template-steps-preview{list-style:none; margin:.25rem 0 0; padding:0}
+.template-steps-preview li{font-size:.75rem; padding:.05rem 0}
+.template-steps-preview li::before{content:'· '; color:var(--ink-3)}
+.template-card-actions{display:flex; justify-content:flex-end; gap:.4rem}
+.template-card-actions .btn-quiet{font-size:.75rem; padding:.25rem .5rem}
+
 /* ---------- account ---------- */
 .account-form{display:flex; flex-direction:column; gap:.6rem}
 

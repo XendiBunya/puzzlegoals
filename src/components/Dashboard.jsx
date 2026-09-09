@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as api from '../lib/api.js';
 
-export default function Dashboard({ onSelect, onNew }) {
+export default function Dashboard({ onSelect, onNew, onTemplates }) {
   const [goals, setGoals] = useState([]);
   const [archived, setArchived] = useState([]);
   const [tab, setTab] = useState('active'); // 'active' | 'archived'
@@ -48,6 +48,7 @@ export default function Dashboard({ onSelect, onNew }) {
       <div className="goalbar">
         <h2>Your puzzles</h2>
         <span className="spacer" />
+        <button className="btn-quiet" type="button" onClick={onTemplates}>Templates</button>
         <button className="btn" type="button" onClick={onNew}>New goal</button>
       </div>
 

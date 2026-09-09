@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard.jsx';
 import Setup from './components/Setup.jsx';
 import Board from './components/Board.jsx';
 import Account from './components/Account.jsx';
+import Templates from './components/Templates.jsx';
 import { useGoalSync } from './hooks/useGoalSync.js';
 import { authClient } from './lib/auth.js';
 import * as api from './lib/api.js';
@@ -81,6 +82,8 @@ export default function App() {
     screen = <AuthForms onAuth={handleAuth} />;
   } else if (route === '#/account') {
     screen = <Account user={user} onUserChange={setUser} onLogout={handleLogout} />;
+  } else if (route === '#/templates') {
+    screen = <Templates onBack={() => navigate('#/')} />;
   } else if (route === '#/new') {
     screen = <Setup onCreate={handleCreate} />;
   } else if (route.startsWith('#/goal/') && goalData) {
@@ -88,7 +91,7 @@ export default function App() {
   } else if (route.startsWith('#/goal/') && loadingGoal) {
     screen = <p className="f-hint" style={{ marginTop: '3rem', textAlign: 'center' }}>Loading puzzle...</p>;
   } else {
-    screen = <Dashboard onSelect={(id) => navigate(`#/goal/${id}`)} onNew={() => navigate('#/new')} />;
+    screen = <Dashboard onSelect={(id) => navigate(`#/goal/${id}`)} onNew={() => navigate('#/new')} onTemplates={() => navigate('#/templates')} />;
   }
 
   return (
