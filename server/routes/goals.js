@@ -63,6 +63,9 @@ goals.post('/', async (c) => {
   if (!name || !img_url || !cols || !rows || !tasks) {
     return c.json({ error: 'Missing required fields' }, 400);
   }
+  if (name.length > 256) {
+    return c.json({ error: 'Goal name must be 256 characters or fewer' }, 400);
+  }
 
   const [row] = await sql`
     INSERT INTO goals (user_id, name, img_url, cols, rows, seed, start_hint, tasks, schema_ver)

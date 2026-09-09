@@ -165,7 +165,7 @@ export function removeTask(goal, id) {
 }
 
 export function renameGoal(goal, name) {
-  return { ...goal, name };
+  return { ...goal, name: name.slice(0, 256) };
 }
 
 export function reducer(goal, action) {

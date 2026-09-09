@@ -127,6 +127,7 @@ export default function Setup({ onCreate }) {
         <input
           className="field field-lg" aria-label="Goal" value={name}
           placeholder="Run a half marathon in May"
+          maxLength={256}
           onChange={(e) => setName(e.target.value)}
         />
       </fieldset>

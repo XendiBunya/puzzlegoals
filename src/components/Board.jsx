@@ -61,6 +61,7 @@ export default function Board({ goal, dispatch }) {
             ref={inputRef}
             className="goal-name-input"
             value={draft}
+            maxLength={256}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commitRename}
             onKeyDown={onKeyDown}
