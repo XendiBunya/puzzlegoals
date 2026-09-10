@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { bodyLimit } from 'hono/body-limit';
@@ -19,6 +20,13 @@ const distPath = join(__dirname, '..', 'dist');
 
 // API app — handles all /api/* routes
 const api = new Hono();
+api.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+  console.error("Unhandled API error:", err);
+  return c.json({ error: 'Internal Server Error' }, 500);
+});
 api.route('/goals', goals);
 api.route('/images', images);
 api.route('/templates', templates);
@@ -29,6 +37,13 @@ api.get('/health', (c) => c.json({ ok: true, commit: gitCommit, started: started
 
 // Main app
 const app = new Hono();
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+  console.error("Unhandled App error:", err);
+  return c.json({ error: 'Internal Server Error' }, 500);
+});
 app.use('*', secureHeaders());
 app.use('*', logger());
 app.use('/api/*', bodyLimit({
